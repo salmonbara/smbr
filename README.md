@@ -22,6 +22,6 @@ This project is continuously evolving with new modules such as web enumeration, 
 
 ### Method 2 — Install from Source
 
-`https://github.com/salmonbara/smbr.git ` 
+`https://github.com/salmonbara/smbr.git `  
 `cd smbr`  
 `pip install .`
