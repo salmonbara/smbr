@@ -1,0 +1,42 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Virtualenv
+venv/
+.env/
+
+# Build
+build/
+dist/
+*.egg-info/
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Payload files
+*.exe
+*.elf
+*.bin
+*.php
+*.asp
+*.aspx
+*.jsp
+
+# Logs
+*.log
+
+# Wordlists (ถ้า copy มาเอง)
+wordlists/
+
+# Secrets
+*.key
+*.pem
+*.crt
