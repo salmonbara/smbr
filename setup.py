@@ -1,10 +1,10 @@
 from setuptools import setup, find_packages
 
 setup(
-    name="salmonbara",
+    name="smbr",
     version="1.0.0",
     author="salmonbara",
-    description="Recon & Exploitation Assistant",
+    description="Recon & Exploitation Tools",
     packages=find_packages(),
     include_package_data=True,
     install_requires=[
@@ -14,7 +14,7 @@ setup(
     ],
     entry_points={
         "console_scripts": [
-            "smbr=salmonbara.cli:app",
+            "smbr=smbr.cli:app",
         ],
     },
     python_requires=">=3.8",

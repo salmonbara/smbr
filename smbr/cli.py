@@ -1,11 +1,11 @@
 import typer
-from salmonbara.modules.recon.recon import run_recon_tcp, run_recon_udp, run_recon_all
-from salmonbara.modules.payloads.revshell import run_revshell
-from salmonbara.modules.payloads.venom import run_venom
+from smbr.modules.recon.recon import run_recon_tcp, run_recon_udp, run_recon_all
+from smbr.modules.payloads.revshell import run_revshell
+from smbr.modules.payloads.venom import run_venom
 
 app = typer.Typer(
     help="""
-🐟 Salmonbara Arsenal — OSCP Recon & Exploitation Assistant
+🐟 smbr tools - Recon & Exploitation Assistant
 
 Main Features:
 • Fast TCP/UDP Recon

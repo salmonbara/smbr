@@ -2,9 +2,9 @@ import subprocess
 import os
 import re
 from rich import print
-from salmonbara.core.recon_summary import render_summary
-from salmonbara.core.udp_intel import snmp_intelligence
-from salmonbara.core.udp_summary import render_udp_summary
+from smbr.core.recon_summary import render_summary
+from smbr.core.udp_intel import snmp_intelligence
+from smbr.core.udp_summary import render_udp_summary
 
 
 def run_cmd(cmd):

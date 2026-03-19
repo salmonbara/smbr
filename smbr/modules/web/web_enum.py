@@ -1,7 +1,7 @@
 import subprocess
 import shutil
 from rich import print
-from salmonbara.core.web_intel import analyze_web
+from smbr.core.web_intel import analyze_web
 
 
 COMMON_WEB_PORTS = [
