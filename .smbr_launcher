@@ -1,2 +1,0 @@
-#!/bin/bash
-exec python3 "/media/sf_salmon-tools/smbr" "$@"
