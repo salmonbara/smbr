@@ -1,7 +1,7 @@
 import subprocess
 import shutil
 from rich import print
-from smbr.core.web_intel import analyze_web
+from ...core.web_intel import analyze_web
 
 
 COMMON_WEB_PORTS = [

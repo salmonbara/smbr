@@ -1,4 +1,4 @@
-## ⚡ About This Project
+## About This Project
 
 `smbr` was developed as a **Vibe Coding project** focused on building a reconnaissance and payload assistant designed to speed up initial enumeration and foothold discovery during penetration testing labs, and CTFs.
 
@@ -14,14 +14,12 @@ This project is continuously evolving with new modules such as web enumeration, 
 
 ---
 
-## Installation
+## ⚙️ Installation (Local Usage)
 
-### Method 1 — Quick Install via pip
+Clone the repository:
 
-`pip install smbr`
+```bash
+git clone https://github.com/salmonbara/smbr
+cd smbr
+```
 
-### Method 2 — Install from Source
-
-`https://github.com/salmonbara/smbr.git`  
-`cd smbr`  
-`pip install .`

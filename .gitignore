@@ -40,3 +40,9 @@ wordlists/
 *.key
 *.pem
 *.crt
+
+# pypi package
+pyproject.toml
+
+# temp file
+.s_tmp
