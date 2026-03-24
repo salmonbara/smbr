@@ -111,12 +111,14 @@ info "Installing launchers to $BIN_DIR..."
 
 cat > "$INSTALL_DIR/.smbr_launcher" << EOF
 #!/bin/bash
+cd "$INSTALL_DIR"
 exec python3 "$INSTALL_DIR/smbr" "\$@"
 EOF
 chmod +x "$INSTALL_DIR/.smbr_launcher"
 
 cat > "$INSTALL_DIR/.s_launcher" << EOF
 #!/bin/bash
+cd "$INSTALL_DIR"
 exec python3 "$INSTALL_DIR/smbr" arsenal "\$@"
 EOF
 chmod +x "$INSTALL_DIR/.s_launcher"
