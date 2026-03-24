@@ -46,3 +46,5 @@ pyproject.toml
 
 # temp file
 .s_tmp
+.s_launcher
+.smbr_launcher
