@@ -31,7 +31,7 @@ A fast, modular CLI tool for penetration testers and CTF players. `smbr` automat
 ### One-line install
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/salmonbara/smbr/main/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/salmonbara/smbr/refs/heads/master/install.sh | bash
 ```
 
 That's it. The script will automatically:
