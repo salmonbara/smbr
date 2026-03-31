@@ -41,9 +41,6 @@ wordlists/
 *.pem
 *.crt
 
-# pypi package
-pyproject.toml
-
 # temp file
 .s_tmp
 .s_launcher

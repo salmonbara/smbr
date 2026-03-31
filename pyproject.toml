@@ -1,0 +1,23 @@
+[build-system]
+requires = ["setuptools>=42"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "smbr"
+version = "1.0.0"
+description = "Pentest Recon & Exploitation Assistant"
+requires-python = ">=3.8"
+dependencies = [
+    "typer",
+    "rich",
+    "textual",
+    "pyperclip",
+]
+
+[project.scripts]
+smbr = "smbrlib.cli:app"
+s    = "smbrlib.arsenal.arsenal:main"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["smbrlib*"]

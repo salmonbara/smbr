@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 """
 smbr-arsenal - Command Launcher for smbr
-A personal command inventory and launcher for pentesters.
 """
 
 import json
@@ -17,6 +16,7 @@ from textual.containers import Container, Vertical
 from textual.reactive import reactive
 from textual.screen import ModalScreen
 from textual.widgets import (
+    Checkbox,
     DataTable,
     Footer,
     Header,
@@ -31,9 +31,19 @@ from textual.widgets import (
 BUNDLE_DIR    = Path(__file__).parent
 BUNDLE_CHEATS = BUNDLE_DIR / "cheats.json"
 
-USER_DIR    = Path.home() / ".smbr" / "arsenal"
-CHEATS_FILE = USER_DIR / "cheats.json"
-VARS_FILE   = USER_DIR / "vars.json"
+USER_DIR     = Path.home() / ".smbr" / "arsenal"
+CHEATS_FILE  = USER_DIR / "cheats.json"
+VARS_FILE    = USER_DIR / "vars.json"
+SETTINGS_FILE = USER_DIR / "settings.json"
+
+# ─── Default settings ────────────────────────────────────────────────────────
+
+DEFAULT_SETTINGS = {
+    "show_category": True,
+    "show_name":     True,
+    "show_command":  True,
+    "show_tags":     True,
+}
 
 # ─── Category colours ────────────────────────────────────────────────────────
 
@@ -83,6 +93,24 @@ def save_vars(v: dict):
         json.dump(v, f, indent=2)
 
 
+def load_settings() -> dict:
+    USER_DIR.mkdir(parents=True, exist_ok=True)
+    if not SETTINGS_FILE.exists():
+        save_settings(DEFAULT_SETTINGS)
+        return dict(DEFAULT_SETTINGS)
+    with open(SETTINGS_FILE) as f:
+        saved = json.load(f)
+    # merge with defaults so new keys are always present
+    merged = dict(DEFAULT_SETTINGS)
+    merged.update(saved)
+    return merged
+
+
+def save_settings(s: dict):
+    with open(SETTINGS_FILE, "w") as f:
+        json.dump(s, f, indent=2)
+
+
 def apply_vars(command: str, variables: dict) -> str:
     result = command
     for key, value in variables.items():
@@ -91,7 +119,6 @@ def apply_vars(command: str, variables: dict) -> str:
 
 
 def highlight_placeholders(command: str) -> str:
-    """Color command text: placeholders = bold yellow, rest = cyan."""
     parts = re.split(r"(<[^>]+>)", command)
     result = ""
     for part in parts:
@@ -103,7 +130,6 @@ def highlight_placeholders(command: str) -> str:
 
 
 def extract_placeholders(command: str) -> list:
-    """Return list of unique placeholder names still in a command string."""
     found = re.findall(r"<([^>]+)>", command)
     seen, result = set(), []
     for p in found:
@@ -126,6 +152,15 @@ def send_to_terminal(command: str):
     except Exception:
         return False
 
+
+def copy_to_clipboard(text: str) -> bool:
+    try:
+        import pyperclip
+        pyperclip.copy(text)
+        return True
+    except Exception:
+        return False
+
 # ─── Modals ──────────────────────────────────────────────────────────────────
 
 class HelpScreen(ModalScreen):
@@ -135,17 +170,20 @@ class HelpScreen(ModalScreen):
         yield Container(
             Static(
                 "[bold cyan]⚙  Keybindings[/]\n\n"
-                "[yellow]/[/]          Search commands\n"
-                "[yellow]Enter[/]      Run command (fill vars if needed)\n"
-                "[yellow]s[/]          Set global variables\n"
-                "[yellow]a[/]          Add new command\n"
-                "[yellow]d[/]          Delete selected command\n"
-                "[yellow]v[/]          View all variables\n"
-                "[yellow]?[/]          This help screen\n"
-                "[yellow]q / Ctrl+C[/]  Quit\n\n"
+                "[yellow]/[/]              Search commands\n"
+                "[yellow]Enter[/]          Run command (fill vars if needed)\n"
+                "[yellow]Ctrl+C[/]         Copy command to clipboard\n"
+                "[yellow]Ctrl+Shift+C[/]   Copy command to clipboard\n"
+                "[yellow]s[/]              Set global variables\n"
+                "[yellow]a[/]              Add new command\n"
+                "[yellow]d[/]              Delete selected command (with confirm)\n"
+                "[yellow]v[/]              View / clear all variables\n"
+                "[yellow]t[/]              Column visibility settings\n"
+                "[yellow]?[/]              This help screen\n"
+                "[yellow]Ctrl+Q[/]         Quit\n\n"
                 "[bold cyan]⚙  Variables[/]\n\n"
                 "Use  [bold yellow]<varname>[/]  in commands as placeholders.\n"
-                "Global vars are saved to [dim]~/.smbr/arsenal/vars.json[/]\n\n"
+                "Global vars saved to [dim]~/.smbr/arsenal/vars.json[/]\n\n"
                 "[dim]Press Escape or q to close[/]",
                 id="help-content",
             ),
@@ -156,6 +194,75 @@ class HelpScreen(ModalScreen):
         self.dismiss()
 
 
+class ConfirmDeleteScreen(ModalScreen):
+    BINDINGS = [("escape,n", "dismiss", "Cancel")]
+
+    def __init__(self, cheat_name: str):
+        super().__init__()
+        self._name = cheat_name
+
+    def compose(self) -> ComposeResult:
+        yield Container(
+            Static(
+                f"[bold red]Delete command?[/]\n\n"
+                f"[bold]{self._name}[/]\n\n"
+                "[dim]Press [bold yellow]y[/] to confirm · [bold yellow]Escape / n[/] to cancel[/]",
+                id="confirm-content",
+            ),
+            id="confirm-box",
+        )
+
+    def on_key(self, event) -> None:
+        if event.key == "y":
+            self.dismiss(True)
+        elif event.key in ("n", "escape"):
+            self.dismiss(False)
+
+    def action_dismiss(self):
+        self.dismiss(False)
+
+
+class SettingsScreen(ModalScreen):
+    """Toggle which columns are visible in the command table."""
+    BINDINGS = [("escape,q", "dismiss", "Close")]
+
+    COLUMN_LABELS = {
+        "show_category": "Category",
+        "show_name":     "Name",
+        "show_command":  "Command",
+        "show_tags":     "Tags",
+    }
+
+    def __init__(self, settings: dict):
+        super().__init__()
+        self._settings = dict(settings)
+
+    def compose(self) -> ComposeResult:
+        widgets = [
+            Static("[bold cyan]⚙  Column Visibility[/]", id="settings-title"),
+            Static("[dim]Space / click to toggle · Escape to close[/]\n", id="settings-hint"),
+        ]
+        for key, label in self.COLUMN_LABELS.items():
+            widgets.append(
+                Checkbox(label, value=self._settings.get(key, True), id=f"chk-{key}")
+            )
+        widgets.append(Static(
+            "\n[dim]Changes apply immediately[/]",
+            id="settings-footer",
+        ))
+        yield Container(*widgets, id="settings-box")
+
+    def on_checkbox_changed(self, event: Checkbox.Changed) -> None:
+        key = event.checkbox.id.replace("chk-", "")
+        self._settings[key] = event.value
+        self.dismiss(self._settings)
+        # re-open so user can keep toggling without reopening manually
+        self.app.push_screen(SettingsScreen(self._settings), self.app._handle_settings)
+
+    def action_dismiss(self):
+        self.dismiss(None)
+
+
 class SetVarScreen(ModalScreen):
     BINDINGS = [("escape", "dismiss", "Cancel")]
 
@@ -163,7 +270,6 @@ class SetVarScreen(ModalScreen):
         super().__init__()
         self._cheats    = cheats
         self._variables = dict(variables)
-        # รวม placeholder ทุกตัวจาก cheats ทั้งหมด (unique, sorted)
         seen, self._keys = set(), []
         for cheat in cheats:
             for p in re.findall(r"<([^>]+)>", cheat["command"]):
@@ -212,7 +318,7 @@ class SetVarScreen(ModalScreen):
         result = {}
         for key in self._keys:
             val = self.query_one(f"#sv-{key}", Input).value.strip()
-            if val:  # ข้าม field ที่เว้นว่าง
+            if val:
                 result[key] = val
         self.dismiss(result if result else None)
 
@@ -221,7 +327,6 @@ class SetVarScreen(ModalScreen):
 
 
 class FillVarsScreen(ModalScreen):
-    """Popup: prompt for every unfilled <placeholder> before running."""
     BINDINGS = [("escape", "dismiss", "Cancel")]
 
     def __init__(self, command: str, missing: list, variables: dict):
@@ -231,8 +336,8 @@ class FillVarsScreen(ModalScreen):
         self._variables = dict(variables)
 
     def compose(self) -> ComposeResult:
-        plain    = apply_vars(self._command, self._variables)
-        preview  = highlight_placeholders(plain)
+        plain   = apply_vars(self._command, self._variables)
+        preview = highlight_placeholders(plain)
         if len(plain) > 110:
             preview = highlight_placeholders(plain[:108]) + "[dim]…[/]"
 
@@ -244,7 +349,6 @@ class FillVarsScreen(ModalScreen):
             widgets.append(Static(f"[bold yellow]<{name}>[/]", classes="fill-label"))
             widgets.append(Input(placeholder=f"Enter {name}…",
                                  id=f"fill-{name}", classes="fill-input"))
-
         widgets.append(Static(
             "\n[dim]Enter moves to next field · Enter on last field runs the command[/]",
             id="fill-hint",
@@ -285,10 +389,10 @@ class AddCommandScreen(ModalScreen):
     def compose(self) -> ComposeResult:
         yield Container(
             Static("[bold cyan]Add New Command[/]", id="add-title"),
-            Input(placeholder="Category  (e.g. Web)",                  id="add-category"),
-            Input(placeholder="Name  (e.g. Curl Headers)",             id="add-name"),
-            Input(placeholder="Command  (use <var> for variables)",    id="add-command"),
-            Input(placeholder="Description  (optional)",               id="add-desc"),
+            Input(placeholder="Category  (e.g. Web)",               id="add-category"),
+            Input(placeholder="Name  (e.g. Curl Headers)",          id="add-name"),
+            Input(placeholder="Command  (use <var> for variables)", id="add-command"),
+            Input(placeholder="Description  (optional)",            id="add-desc"),
             Static("[dim]Enter on last field to save · Escape to cancel[/]"),
             id="add-box",
         )
@@ -331,13 +435,20 @@ class VarsScreen(ModalScreen):
         else:
             lines = "  [dim]No variables set yet. Press [yellow]s[/] to set one.[/]"
         yield Container(
-            Static(f"[bold cyan]Global Variables[/]\n\n{lines}\n\n[dim]Escape to close[/]",
-                   id="vars-content"),
+            Static(
+                f"[bold cyan]Global Variables[/]\n\n{lines}\n\n"
+                "[dim]Press [yellow]c[/] to clear all · Escape to close[/]",
+                id="vars-content",
+            ),
             id="vars-box",
         )
 
+    def on_key(self, event) -> None:
+        if event.key == "c":
+            self.dismiss("clear")
+
     def action_dismiss(self):
-        self.dismiss()
+        self.dismiss(None)
 
 
 # ─── Main App ────────────────────────────────────────────────────────────────
@@ -380,11 +491,12 @@ class Arsenal(App):
     #detail-desc    { color: $text-muted; }
     #detail-vars    { color: $warning; }
 
-    HelpScreen, SetVarScreen, AddCommandScreen, VarsScreen, FillVarsScreen {
+    HelpScreen, SetVarScreen, AddCommandScreen, VarsScreen,
+    FillVarsScreen, ConfirmDeleteScreen, SettingsScreen {
         align: center middle;
         background: $background 60%;
     }
-    #help-box, #add-box, #vars-box {
+    #help-box, #add-box, #vars-box, #confirm-box {
         background: $surface;
         border: double $primary;
         padding: 1 2;
@@ -392,6 +504,21 @@ class Arsenal(App):
         height: auto;
         align: center middle;
     }
+    #confirm-box  { border: double $error; width: 50; }
+    #settings-box {
+        background: $surface;
+        border: double $primary;
+        padding: 1 2;
+        width: 44;
+        height: auto;
+        align: center middle;
+    }
+    #settings-title  { text-style: bold; margin-bottom: 0; }
+    #settings-hint   { color: $text-muted; }
+    #settings-footer { color: $text-muted; }
+    #settings-box Checkbox { margin: 0 0 0 1; }
+
+    #confirm-content { width: 100%; }
     #help-content, #vars-content { width: 100%; }
     #add-title { margin-bottom: 1; }
     #add-box Input { margin-bottom: 1; }
@@ -428,13 +555,17 @@ class Arsenal(App):
     """
 
     BINDINGS = [
-        Binding("/", "focus_search",   "Search",    show=True),
-        Binding("s", "set_var",        "Set Var",   show=True),
-        Binding("a", "add_command",    "Add Cmd",   show=True),
-        Binding("d", "delete_command", "Delete",    show=True),
-        Binding("v", "view_vars",      "Variables", show=True),
-        Binding("?", "help",           "Help",      show=True),
-        Binding("q", "quit",           "Quit",      show=True),
+        Binding("/",           "focus_search",   "Search",    show=True),
+        Binding("ctrl+c",      "copy_command",   "Copy",      show=True),
+        Binding("ctrl+shift+c","copy_command",   "Copy",      show=False),
+        Binding("s",           "set_var",        "Set Var",   show=True),
+        Binding("a",           "add_command",    "Add Cmd",   show=True),
+        Binding("d",           "delete_command", "Delete",    show=True),
+        Binding("v",           "view_vars",      "Variables", show=True),
+        Binding("t",           "settings",       "Columns",   show=True),
+        Binding("?",           "help",           "Help",      show=True),
+        Binding("ctrl+q",      "quit",           "Quit",      show=True),
+        Binding("q",           "quit",           "Quit",      show=False),
     ]
 
     selected_category = reactive("All")
@@ -444,6 +575,7 @@ class Arsenal(App):
         super().__init__()
         self.cheats    = load_cheats()
         self.variables = load_vars()
+        self.settings  = load_settings()
 
     # ── Compose ───────────────────────────────────────────────────────────
 
@@ -503,27 +635,63 @@ class Arsenal(App):
 
     def _render_cmd_preview(self, command: str) -> str:
         plain = apply_vars(command, self.variables)
-        if len(plain) > 80:
-            plain = plain[:78] + "…"
+        max_w = getattr(self, "_cmd_preview_width", 78)
+        if len(plain) > max_w:
+            plain = plain[:max_w - 2] + "…"
         return highlight_placeholders(plain)
 
     def _build_table(self):
         table = self.query_one(DataTable)
         table.clear(columns=True)
-        table.add_column("Category",          width=14)
-        table.add_column("Name",              width=22)
-        table.add_column("Command (preview)", width=68)
-        table.add_column("Tags",              width=26)
+
+        s = self.settings
+
+        # Fixed widths for non-command columns (min sizes)
+        FIXED = {"category": 14, "name": 22, "tags": 24}
+        # Total usable width (left panel=26 + borders, right panel fills rest)
+        # We use console width minus left panel and padding as approximation
+        try:
+            total_w = self.app.console.width - 30  # subtract left panel + borders
+        except Exception:
+            total_w = 100
+
+        show_cat  = s.get("show_category", True)
+        show_name = s.get("show_name",     True)
+        show_cmd  = s.get("show_command",  True)
+        show_tags = s.get("show_tags",     True)
+
+        # Fallback: always show command if everything hidden
+        if not any([show_cat, show_name, show_cmd, show_tags]):
+            show_cmd = True
+
+        # Calculate fixed column space consumed
+        fixed_used = 0
+        if show_cat:  fixed_used += FIXED["category"] + 2
+        if show_name: fixed_used += FIXED["name"] + 2
+        if show_tags: fixed_used += FIXED["tags"] + 2
+
+        # Command column gets whatever is left (min 30)
+        cmd_width = max(30, total_w - fixed_used) if show_cmd else 0
+
+        # Register columns in order with dynamic widths
+        if show_cat:  table.add_column("Category",          width=FIXED["category"])
+        if show_name: table.add_column("Name",              width=FIXED["name"])
+        if show_cmd:  table.add_column("Command (preview)", width=cmd_width)
+        if show_tags: table.add_column("Tags",              width=FIXED["tags"])
+
+        # Also update preview renderer to use new cmd_width
+        self._cmd_preview_width = cmd_width - 2
 
         for cheat in self._filtered_cheats():
-            colour = cat_colour(cheat["category"])
-            tags   = "[dim]" + ", ".join(cheat.get("tags", [])) + "[/]" if cheat.get("tags") else ""
-            table.add_row(
-                f"[{colour}]{cheat['category']}[/]",
-                f"[bold]{cheat['name']}[/]",
-                self._render_cmd_preview(cheat["command"]),
-                tags,
-            )
+            colour   = cat_colour(cheat["category"])
+            tags_str = "[dim]" + ", ".join(cheat.get("tags", [])) + "[/]" if cheat.get("tags") else ""
+            row = []
+            if show_cat:  row.append(f"[{colour}]{cheat['category']}[/]")
+            if show_name: row.append(f"[bold]{cheat['name']}[/]")
+            if show_cmd:  row.append(self._render_cmd_preview(cheat["command"]))
+            if show_tags: row.append(tags_str)
+            table.add_row(*row)
+
         self._update_detail()
 
     # ── Detail panel ──────────────────────────────────────────────────────
@@ -605,6 +773,20 @@ class Arsenal(App):
     def action_focus_search(self):
         self.query_one("#search-bar").focus()
 
+    def action_copy_command(self):
+        """Ctrl+C / Ctrl+Shift+C — copy selected command to clipboard."""
+        filtered = self._filtered_cheats()
+        table    = self.query_one(DataTable)
+        row      = table.cursor_row
+        if not (0 <= row < len(filtered)):
+            return
+        cheat = filtered[row]
+        cmd   = apply_vars(cheat["command"], self.variables)
+        if copy_to_clipboard(cmd):
+            self.notify(f"Copied: [bold]{cheat['name']}[/]", title="Clipboard")
+        else:
+            self.notify("pyperclip not available", title="Copy failed", severity="warning")
+
     def action_set_var(self):
         def handle(result):
             if result:
@@ -629,17 +811,38 @@ class Arsenal(App):
         table    = self.query_one(DataTable)
         filtered = self._filtered_cheats()
         row      = table.cursor_row
-        if 0 <= row < len(filtered):
-            cheat = filtered[row]
-            self.cheats.remove(cheat)
-            save_cheats(self.cheats)
-            self._build_category_list()
-            self._build_table()
-            self.notify(f"Deleted: [bold]{cheat['name']}[/]",
-                        title="Deleted", severity="warning")
+        if not (0 <= row < len(filtered)):
+            return
+        cheat = filtered[row]
+
+        def handle(confirmed):
+            if confirmed:
+                self.cheats.remove(cheat)
+                save_cheats(self.cheats)
+                self._build_category_list()
+                self._build_table()
+                self.notify(f"Deleted: [bold]{cheat['name']}[/]",
+                            title="Deleted", severity="warning")
+
+        self.push_screen(ConfirmDeleteScreen(cheat["name"]), handle)
 
     def action_view_vars(self):
-        self.push_screen(VarsScreen(self.variables))
+        def handle(result):
+            if result == "clear":
+                self.variables = {}
+                save_vars(self.variables)
+                self._build_table()
+                self.notify("All variables cleared", title="Variables", severity="warning")
+        self.push_screen(VarsScreen(self.variables), handle)
+
+    def action_settings(self):
+        self.push_screen(SettingsScreen(self.settings), self._handle_settings)
+
+    def _handle_settings(self, result):
+        if result:
+            self.settings = result
+            save_settings(self.settings)
+            self._build_table()
 
     def action_help(self):
         self.push_screen(HelpScreen())

