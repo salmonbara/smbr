@@ -33,8 +33,11 @@ BUNDLE_CHEATS = BUNDLE_DIR / "cheats.json"
 
 USER_DIR     = Path.home() / ".smbr" / "arsenal"
 CHEATS_FILE  = USER_DIR / "cheats.json"
-VARS_FILE    = USER_DIR / "vars.json"
+VARS_FILE     = USER_DIR / "vars.json"
 SETTINGS_FILE = USER_DIR / "settings.json"
+
+BUNDLE_PRIVESC = BUNDLE_DIR / "privesc.json"
+PRIVESC_FILE   = USER_DIR / "privesc.json"
 
 # ─── Default settings ────────────────────────────────────────────────────────
 
@@ -47,16 +50,39 @@ DEFAULT_SETTINGS = {
 
 # ─── Category colours ────────────────────────────────────────────────────────
 
-_PALETTE = [
-    "cyan", "magenta", "yellow", "green", "blue", "red",
-    "bright_cyan", "bright_magenta", "bright_green",
+# Fixed colours per category — no random assignment
+_CAT_COLOURS: dict = {
+    "Recon":            "bright_cyan",
+    "Web":              "bright_green",
+    "SMB":              "yellow",
+    "LDAP":             "magenta",
+    "Kerberos":         "bright_magenta",
+    "AD":               "cyan",
+    "ADCS":             "bright_cyan",
+    "Lateral Movement": "red",
+    "Exploit":          "bright_magenta",
+    "Post-Exploit":     "green",
+    "File Transfer":    "yellow",
+    "Remote":           "cyan",
+    "Bruteforce":       "red",
+    "Crack":            "magenta",
+    "DB":               "green",
+    # privesc
+    "Linux":            "green",
+    "Windows":          "cyan",
+}
+_FALLBACK_PALETTE = [
+    "bright_cyan", "bright_magenta", "yellow",
+    "bright_green", "magenta", "red",
 ]
 _cat_colour_cache: dict = {}
 
 def cat_colour(category: str) -> str:
+    if category in _CAT_COLOURS:
+        return _CAT_COLOURS[category]
     if category not in _cat_colour_cache:
-        idx = len(_cat_colour_cache) % len(_PALETTE)
-        _cat_colour_cache[category] = _PALETTE[idx]
+        idx = len(_cat_colour_cache) % len(_FALLBACK_PALETTE)
+        _cat_colour_cache[category] = _FALLBACK_PALETTE[idx]
     return _cat_colour_cache[category]
 
 # ─── Helpers ─────────────────────────────────────────────────────────────────
@@ -109,6 +135,19 @@ def load_settings() -> dict:
 def save_settings(s: dict):
     with open(SETTINGS_FILE, "w") as f:
         json.dump(s, f, indent=2)
+
+
+def load_privesc() -> list:
+    USER_DIR.mkdir(parents=True, exist_ok=True)
+    if not PRIVESC_FILE.exists():
+        if BUNDLE_PRIVESC.exists():
+            import shutil
+            shutil.copy(BUNDLE_PRIVESC, PRIVESC_FILE)
+        else:
+            with open(PRIVESC_FILE, "w") as f:
+                json.dump([], f, indent=2)
+    with open(PRIVESC_FILE) as f:
+        return json.load(f)
 
 
 def apply_vars(command: str, variables: dict) -> str:
@@ -179,6 +218,7 @@ class HelpScreen(ModalScreen):
                 "[yellow]d[/]              Delete selected command (with confirm)\n"
                 "[yellow]v[/]              View / clear all variables\n"
                 "[yellow]t[/]              Column visibility settings\n"
+                "[yellow]p[/]              PrivEsc reference guide\n"
                 "[yellow]?[/]              This help screen\n"
                 "[yellow]Ctrl+Q[/]         Quit\n\n"
                 "[bold cyan]⚙  Variables[/]\n\n"
@@ -266,29 +306,37 @@ class SettingsScreen(ModalScreen):
 class SetVarScreen(ModalScreen):
     BINDINGS = [("escape", "dismiss", "Cancel")]
 
+    # Only these vars are set globally — everything else is filled per-command
+    GLOBAL_VARS = ["ip", "lhost", "lport", "user", "password", "domain", "dc_ip"]
+    GLOBAL_HINTS = {
+        "ip":       "Target IP  e.g. 10.10.10.10",
+        "lhost":    "Attacker IP  e.g. 10.10.14.5",
+        "lport":    "Listener port  e.g. 4444",
+        "user":     "Username  e.g. Administrator",
+        "password": "Password  e.g. Password123@",
+        "domain":   "Domain name  e.g. corp.com",
+        "dc_ip":    "Domain Controller IP  e.g. 10.10.10.1",
+    }
+
     def __init__(self, cheats: list, variables: dict):
         super().__init__()
         self._cheats    = cheats
         self._variables = dict(variables)
-        seen, self._keys = set(), []
-        for cheat in cheats:
-            for p in re.findall(r"<([^>]+)>", cheat["command"]):
-                if p not in seen:
-                    seen.add(p)
-                    self._keys.append(p)
+        self._keys      = self.GLOBAL_VARS
 
     def compose(self) -> ComposeResult:
         widgets = [
-            Static("[bold cyan]Set Variables[/]", id="setvar-title"),
-            Static("[dim]Fill any fields you want · leave blank to skip[/]\n",
+            Static("[bold cyan]Set Global Variables[/]", id="setvar-title"),
+            Static("[dim]These values apply to all commands · leave blank to skip[/]\n",
                    id="setvar-hint"),
         ]
         for key in self._keys:
             current = self._variables.get(key, "")
+            hint    = self.GLOBAL_HINTS.get(key, f"e.g. {key}")
             widgets.append(Static(f"[bold yellow]<{key}>[/]", classes="setvar-label"))
             widgets.append(Input(
                 value=current,
-                placeholder=f"current: {current}" if current else f"e.g. {key}…",
+                placeholder=f"current: {current}" if current else hint,
                 id=f"sv-{key}",
                 classes="setvar-input",
             ))
@@ -451,6 +499,186 @@ class VarsScreen(ModalScreen):
         self.dismiss(None)
 
 
+# ─── PrivEsc Tab ─────────────────────────────────────────────────────────────
+
+class PrivEscScreen(ModalScreen):
+    """Full-screen PrivEsc reference — Category → Technique → Steps."""
+    BINDINGS = [
+        Binding("escape,q", "dismiss",  "Back"),
+        Binding("ctrl+c",   "copy_cmd", "Copy", show=True),
+    ]
+
+    CAT_COLOURS = {"Linux": "green", "Windows": "cyan", "AD": "magenta"}
+
+    def __init__(self, variables: dict):
+        super().__init__()
+        self._variables    = variables
+        self._privesc      = load_privesc()
+        self._categories   = sorted({e["category"] for e in self._privesc})
+        self._sel_category = self._categories[0] if self._categories else "Linux"
+        self._sel_tech_idx = 0   # index into technique list for current category
+
+    # ── helpers ───────────────────────────────────────────────────────────
+
+    def _techniques(self):
+        return [e for e in self._privesc if e["category"] == self._sel_category]
+
+    def _current_technique(self):
+        techs = self._techniques()
+        if 0 <= self._sel_tech_idx < len(techs):
+            return techs[self._sel_tech_idx]
+        return None
+
+    def _colour(self):
+        return self.CAT_COLOURS.get(self._sel_category, "yellow")
+
+    # ── compose ───────────────────────────────────────────────────────────
+
+    def compose(self) -> ComposeResult:
+        yield Header(show_clock=False)
+        with Container(id="pe-layout"):
+            # Left — categories
+            with Vertical(id="pe-cat-panel"):
+                yield Static("🔓 PrivEsc", id="pe-cat-title")
+                yield ListView(id="pe-cat-list")
+            # Middle — techniques
+            with Vertical(id="pe-tech-panel"):
+                yield Static("Techniques", id="pe-tech-title")
+                yield ListView(id="pe-tech-list")
+            # Right — steps detail
+            with Vertical(id="pe-step-panel"):
+                yield Static("", id="pe-tech-name")
+                yield Static("", id="pe-tech-desc")
+                yield DataTable(id="pe-step-table", cursor_type="row")
+                with Vertical(id="pe-step-detail"):
+                    yield Static("", id="pe-step-cmd")
+                    yield Static("", id="pe-step-note")
+        yield Footer()
+
+    def on_mount(self):
+        self._build_cat_list()
+        self._build_tech_list()
+        self._build_step_table()
+        self.query_one("#pe-cat-list").focus()
+
+    # ── category panel ────────────────────────────────────────────────────
+
+    def _build_cat_list(self):
+        lv = self.query_one("#pe-cat-list", ListView)
+        lv.clear()
+        for cat in self._categories:
+            colour = self.CAT_COLOURS.get(cat, "yellow")
+            marker = "▶ " if cat == self._sel_category else "  "
+            count  = sum(1 for e in self._privesc if e["category"] == cat)
+            lv.append(ListItem(Static(
+                f"{marker}[{colour}]{cat}[/] [dim]({count})[/]"
+            )))
+
+    # ── technique panel ───────────────────────────────────────────────────
+
+    def _build_tech_list(self):
+        lv     = self.query_one("#pe-tech-list", ListView)
+        colour = self._colour()
+        lv.clear()
+        for i, tech in enumerate(self._techniques()):
+            marker = "▶ " if i == self._sel_tech_idx else "  "
+            lv.append(ListItem(Static(
+                f"{marker}[{colour}]{tech['technique']}[/]"
+            )))
+
+    # ── step table ────────────────────────────────────────────────────────
+
+    def _build_step_table(self):
+        tech   = self._current_technique()
+        colour = self._colour()
+
+        # Header
+        name = tech["technique"] if tech else ""
+        desc = tech.get("description", "") if tech else ""
+        self.query_one("#pe-tech-name").update(f"[bold {colour}]{name}[/]")
+        self.query_one("#pe-tech-desc").update(f"[dim]{desc}[/]")
+
+        table = self.query_one(DataTable)
+        table.clear(columns=True)
+        table.add_column("#",    width=3)
+        table.add_column("Note", width=36)
+        table.add_column("Command (preview)", width=70)
+
+        if tech:
+            for s in tech.get("steps", []):
+                cmd_preview = apply_vars(s["command"], self._variables)
+                if len(cmd_preview) > 68:
+                    cmd_preview = cmd_preview[:66] + "…"
+                table.add_row(
+                    f"[dim]{s['step']}[/]",
+                    f"[{colour}]{s['note']}[/]",
+                    f"[cyan]{cmd_preview}[/]",
+                )
+        self._update_step_detail()
+
+    def _update_step_detail(self):
+        tech = self._current_technique()
+        if not tech:
+            self.query_one("#pe-step-cmd").update("")
+            self.query_one("#pe-step-note").update("")
+            return
+
+        steps = tech.get("steps", [])
+        row   = self.query_one(DataTable).cursor_row
+        if 0 <= row < len(steps):
+            s   = steps[row]
+            cmd = apply_vars(s["command"], self._variables)
+            self.query_one("#pe-step-cmd").update(
+                f"[bold]$ {highlight_placeholders(cmd)}[/]"
+            )
+            self.query_one("#pe-step-note").update(f"[dim]💡 {s['note']}[/]")
+        else:
+            self.query_one("#pe-step-cmd").update("")
+            self.query_one("#pe-step-note").update("")
+
+    # ── events ────────────────────────────────────────────────────────────
+
+    def on_data_table_row_highlighted(self, _event):
+        self._update_step_detail()
+
+    def on_list_view_selected(self, event: ListView.Selected):
+        lv = event.list_view
+
+        if lv.id == "pe-cat-list":
+            idx = lv.index
+            if idx is not None and idx < len(self._categories):
+                self._sel_category = self._categories[idx]
+                self._sel_tech_idx = 0
+                self._build_cat_list()
+                self._build_tech_list()
+                self._build_step_table()
+                self.query_one("#pe-tech-list").focus()
+
+        elif lv.id == "pe-tech-list":
+            idx = lv.index
+            if idx is not None and idx < len(self._techniques()):
+                self._sel_tech_idx = idx
+                self._build_tech_list()
+                self._build_step_table()
+                self.query_one(DataTable).focus()
+
+    # ── actions ───────────────────────────────────────────────────────────
+
+    def action_copy_cmd(self):
+        tech  = self._current_technique()
+        if not tech:
+            return
+        steps = tech.get("steps", [])
+        row   = self.query_one(DataTable).cursor_row
+        if 0 <= row < len(steps):
+            cmd = apply_vars(steps[row]["command"], self._variables)
+            if copy_to_clipboard(cmd):
+                self.notify(f"Copied step {steps[row]['step']}", title="Clipboard")
+
+    def action_dismiss(self):
+        self.dismiss()
+
+
 # ─── Main App ────────────────────────────────────────────────────────────────
 
 class Arsenal(App):
@@ -490,6 +718,50 @@ class Arsenal(App):
     #detail-command { text-style: bold; }
     #detail-desc    { color: $text-muted; }
     #detail-vars    { color: $warning; }
+
+    PrivEscScreen {
+        align: center middle;
+        background: $surface;
+    }
+    #pe-layout { layout: horizontal; height: 1fr; }
+
+    #pe-cat-panel {
+        width: 18;
+        border: solid $success;
+        padding: 0 1;
+    }
+    #pe-cat-title {
+        color: $success;
+        text-style: bold;
+        padding: 0 0 1 0;
+        border-bottom: solid $success-darken-2;
+    }
+    #pe-cat-list             { background: transparent; border: none; padding: 0; }
+    #pe-cat-list > ListItem  { background: transparent; padding: 0 1; }
+    #pe-cat-list > ListItem.--highlight { background: $success-darken-2; }
+
+    #pe-tech-panel {
+        width: 28;
+        border: solid $primary;
+        padding: 0 1;
+    }
+    #pe-tech-title {
+        color: $primary;
+        text-style: bold;
+        padding: 0 0 1 0;
+        border-bottom: solid $primary-darken-2;
+    }
+    #pe-tech-list             { background: transparent; border: none; padding: 0; }
+    #pe-tech-list > ListItem  { background: transparent; padding: 0 1; }
+    #pe-tech-list > ListItem.--highlight { background: $primary-darken-2; }
+
+    #pe-step-panel  { width: 1fr; layout: vertical; padding: 0 1; border: solid $accent; }
+    #pe-tech-name   { text-style: bold; padding: 0 0 0 0; }
+    #pe-tech-desc   { color: $text-muted; padding: 0 0 1 0; border-bottom: solid $accent-darken-3; }
+    #pe-step-table  { height: 1fr; }
+    #pe-step-detail { height: 5; border: solid $accent-darken-2; padding: 0 1; margin-top: 1; }
+    #pe-step-cmd    { text-style: bold; }
+    #pe-step-note   { color: $text-muted; }
 
     HelpScreen, SetVarScreen, AddCommandScreen, VarsScreen,
     FillVarsScreen, ConfirmDeleteScreen, SettingsScreen {
@@ -566,6 +838,7 @@ class Arsenal(App):
         Binding("?",           "help",           "Help",      show=True),
         Binding("ctrl+q",      "quit",           "Quit",      show=True),
         Binding("q",           "quit",           "Quit",      show=False),
+        Binding("p",           "privesc",        "PrivEsc",   show=True),
     ]
 
     selected_category = reactive("All")
@@ -843,6 +1116,9 @@ class Arsenal(App):
             self.settings = result
             save_settings(self.settings)
             self._build_table()
+
+    def action_privesc(self):
+        self.push_screen(PrivEscScreen(self.variables))
 
     def action_help(self):
         self.push_screen(HelpScreen())
